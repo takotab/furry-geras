@@ -338,14 +338,14 @@ def get_pose_net(cfg, is_train, **kwargs):
 def get_fully_pretrained_pose_net(f_pretrained=None, num_layers=50, cfg=None, **kwargs):
     if f_pretrained is None:
         f_pretrained = Path(
-            "models", "pytorch/pose_coco/pose_resnet_50_256x192.pth.tar"
+            "saved_model", "resnet50_256x192/pose_resnet_50_256x192.pth.tar"
         )
     block_class, layers = resnet_spec[num_layers]
     if cfg is None:
-        from lib.core.config import update_config
-        from lib.core.config import config
+        from .config import update_config
+        from .config import config
 
-        f = "experiments/coco/resnet50/256x192_d256x3_adam_lr1e-3.yaml"
+        f = "saved_model/resnet50_256x192/256x192_d256x3_adam_lr1e-3.yaml"
         update_config(f)
         cfg = config
 

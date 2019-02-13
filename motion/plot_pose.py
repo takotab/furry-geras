@@ -1,10 +1,11 @@
 from matplotlib import pyplot as plt
 import cv2
-
+import os
+from .utils import filename_maker
 from . import config
 
 
-def plot_pose(data_numpy, points=None):
+def plot_pose(data_numpy, points=None, name=None):
     files = []
     for i in range(data_numpy.shape[0]):
         plt.imshow(
@@ -20,8 +21,11 @@ def plot_pose(data_numpy, points=None):
                     marker="o",
                     color="r",
                 )
-        f = "output/temp_frame_" + str(i) + ".png"
-        plt.savefig(f)
+        if name is None:
+            name = filename_maker()
+        f = os.path.join(name, "temp_frame_" + str(i) + ".png")
+        plt.axis("off")
+        plt.savefig(f, bbox_inches="tight")
         files.append(f)
         plt.close()
     return files

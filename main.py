@@ -11,13 +11,7 @@ def main(video_dir):
 
     # Create a VideoCapture object and read from input file
     # If the input is the camera, pass 0 instead of the video file name
-    start_time = time.time()
-    array = motion.get_video_array(video_dir)
-    print("geting video", time.time() - start_time)
-    pred = motion.get_pose(array, device="cpu")
-    print("geting get_pose", time.time() - start_time)
-    video = motion.plot_pose(array, pred)
-    print("geting plot_pose", time.time() - start_time)
+    motion.make_posevid(video_dir)
 
 
 if __name__ == "__main__":

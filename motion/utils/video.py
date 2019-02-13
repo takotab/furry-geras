@@ -6,9 +6,10 @@ import cv2
 from cv2 import VideoWriter, VideoWriter_fourcc, imread, resize
 
 from .. import config
+from . import filename_maker
 
 
-def make_video(images, outvid=None, fps=30, size=None, is_color=True, format="XVID"):
+def make_video(images, name=None, fps=30, size=None, is_color=True, format="XVID"):
     """
     Create a video from a list of images.
  
@@ -24,8 +25,9 @@ def make_video(images, outvid=None, fps=30, size=None, is_color=True, format="XV
     By default, the video will have the size of the first image.
     It will resize every image to this size before adding them to the video.
     """
-    if outvid is None:
-        outvid = "output/temp_" + datetime.datetime.now().isoformat() + ".mp4"
+    if name is None:
+        name = filename_maker()
+    vid_dir = os.path.join(name, "posevid.mp4")
     fourcc = VideoWriter_fourcc(*format)
     vid = None
     for image in images:
@@ -38,12 +40,12 @@ def make_video(images, outvid=None, fps=30, size=None, is_color=True, format="XV
         if vid is None:
             if size is None:
                 size = img.shape[1], img.shape[0]
-            vid = VideoWriter(outvid, fourcc, float(fps), size, is_color)
+            vid = VideoWriter(vid_dir, fourcc, float(fps), size, is_color)
         if size[0] != img.shape[1] and size[1] != img.shape[0]:
             img = resize(img, size)
         vid.write(img)
     vid.release()
-    return vid
+    return vid_dir
 
 
 def get_video_array(video_dir):

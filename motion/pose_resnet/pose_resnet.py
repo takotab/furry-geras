@@ -337,16 +337,14 @@ def get_pose_net(cfg, is_train, **kwargs):
 
 def get_fully_pretrained_pose_net(f_pretrained=None, num_layers=50, cfg=None, **kwargs):
     if f_pretrained is None:
-        f_pretrained = Path(
-            "saved_model", "resnet50_256x192/pose_resnet_50_256x192.pth.tar"
-        )
+        f_pretrained = Path("saved_model/pose_resnet_50_256x192.pth.tar")
     block_class, layers = resnet_spec[num_layers]
     if cfg is None:
         from .config import update_config
         from .config import config
 
-        f = "saved_model/resnet50_256x192/256x192_d256x3_adam_lr1e-3.yaml"
-        update_config(f)
+        f = Path(__file__).parent / "256x192_d256x3_adam_lr1e-3.yaml"
+        update_config(str(f))
         cfg = config
 
     model = PoseResNet(block_class, layers, cfg, **kwargs)

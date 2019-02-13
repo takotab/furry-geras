@@ -104,3 +104,4 @@ venv.bak/
 .mypy_cache/
 **/coco/**
 **/saved_model/**
+output/**

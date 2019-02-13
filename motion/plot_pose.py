@@ -5,7 +5,7 @@ from . import config
 
 
 def plot_pose(data_numpy, points=None):
-    fig1 = plt.gcf()
+    files = []
     for i in range(data_numpy.shape[0]):
         plt.imshow(
             cv2.cvtColor(data_numpy[i], cv2.COLOR_BGR2RGB),
@@ -20,12 +20,11 @@ def plot_pose(data_numpy, points=None):
                     marker="o",
                     color="r",
                 )
-
-        plt.axis("off")
-        plt.draw()
-        if i == 0:
-            plt.show()
-    return fig1
+        f = "output/temp_frame_" + str(i) + ".png"
+        plt.savefig(f)
+        files.append(f)
+        plt.close()
+    return files
 
 
 def get_scale(key):

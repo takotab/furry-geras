@@ -40,31 +40,15 @@ def main(video_dir):
 
     # Create a VideoCapture object and read from input file
     # If the input is the camera, pass 0 instead of the video file name
+    start_time = time.time()
     array = get_video_array(video_dir)
-    pred = motion.get_pose(array)
-
+    print("geting video", time.time() - start_time)
+    pred = motion.get_pose(array, device="cpu")
+    print("geting get_pose", time.time() - start_time)
     video = motion.plot_pose(array, pred)
-    # # Check if camera opened successfully
-    # if cap.isOpened() == False:
-    #     print("Error opening video stream or file")
-    # start_time = time.time()
-    # # Read until video is completed
-    # plt.figure()
-    # while cap.isOpened():
-    #     # Capture frame-by-frame
-    #     ret, frame = cap.read()
-    #     print(frame)
-    #     if ret == True:
-    #         fig, pred = motion.get_pose(frame)
-    #     # Break the loop
-    #     else:
-    #         break
-    #     plt.pause(0.01)
-    #     if time.time() - start_time > 10:
-    #         print("out_of_time")
-    #         break
+    print("geting plot_pose", time.time() - start_time)
 
 
 if __name__ == "__main__":
-    video_dir = "coco/oma.mp4"
+    video_dir = "coco/divera_trend.mp4"
     main(video_dir)

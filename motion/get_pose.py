@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import torch
+import time
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from . import pose_resnet
@@ -8,8 +9,8 @@ from . import pose_resnet
 output_shape = (0, 0)
 
 
-def get_pose(numpy_video):
-    pred = pose_estimate(numpy_video)
+def get_pose(numpy_video, **kwargs):
+    pred = pose_estimate(numpy_video, **kwargs)
     return pred
 
 
@@ -29,15 +30,17 @@ class Video(Dataset):
         return transform(self.b[index])
 
 
-def pose_estimate(data_array):
-
-    model = get_model()
+def pose_estimate(data_array, device=None):
+    start_time = time.time()
+    if device is None:
+        device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    device = torch.device(device)
+    model = get_model().to(device)
     data = DataLoader(Video(data_array), batch_size=32)
-
     pred, val = [], []
     for input in data:
-        output = model(input.cuda()).detach().cpu().numpy()
-        _pred, _val = pose_resnet.inference.get_max_preds(output)
+        output = model(input.to(device))
+        _pred, _val = pose_resnet.inference.get_max_preds(output.detach().cpu().numpy())
         pred.append(_pred)
         val.append(val)
     return np.concatenate(pred)

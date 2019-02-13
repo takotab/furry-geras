@@ -12,8 +12,8 @@ def get_video_array(video_dir):
 
     cap = cv2.VideoCapture(video_dir)
     frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    # frameWidth = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    # frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     buf = np.empty(
         (frameCount, config.resize["height"], config.resize["width"], 3),

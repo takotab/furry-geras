@@ -37,7 +37,6 @@ def pose_estimate(data_array):
     pred, val = [], []
     for input in data:
         output = model(input.cuda()).detach().cpu().numpy()
-        print(output.shape[1:])
         _pred, _val = pose_resnet.inference.get_max_preds(output)
         pred.append(_pred)
         val.append(val)

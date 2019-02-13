@@ -4,7 +4,7 @@ import cv2
 from . import config
 
 
-def plot_pose(data_numpy, points):
+def plot_pose(data_numpy, points=None):
     fig1 = plt.gcf()
     for i in range(data_numpy.shape[0]):
         plt.imshow(
@@ -12,17 +12,19 @@ def plot_pose(data_numpy, points):
             cmap="gray",
             interpolation="bicubic",
         )
-        for p in points[i]:
-            plt.plot(
-                (p[0] * get_scale("height")),
-                (p[1] * get_scale("width")),
-                marker="o",
-                color="r",
-            )
+        if points is not None:
+            for p in points[i]:
+                plt.plot(
+                    (p[0] * get_scale("height")),
+                    (p[1] * get_scale("width")),
+                    marker="o",
+                    color="r",
+                )
 
         plt.axis("off")
         plt.draw()
-        plt.show()
+        if i == 0:
+            plt.show()
     return fig1
 
 

@@ -23,10 +23,9 @@ def main():
 
     os.system("python -m pytest --result-log=test_results.txt")
     check_tests_passed()
-    path = Path("/home", "tako", "devtools")
+    path = Path("/home", "tako", "devtools", "furry-geras")
     copyanything(
-        Path(path / "furry-geras" / "motion"),
-        Path(path / "furry-geras-app" / "app" / "motion"),
+        Path(path / "motion"), Path(path / "furry-geras-app" / "app" / "motion")
     )
 
 

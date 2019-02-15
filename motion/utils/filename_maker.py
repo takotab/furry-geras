@@ -13,7 +13,7 @@ def filename_maker(name=None):
         del_folder(dir, "*temp*")
     if not os.path.exists("output"):
         os.mkdir("output")
-
+    print(dir)
     os.mkdir(dir)
     return Path(dir)
 

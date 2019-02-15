@@ -105,4 +105,4 @@ venv.bak/
 **/coco/**
 **/saved_model/**
 output/**
-# furry-geras-app/app/motion/**
+furry-geras-app/app/motion/**

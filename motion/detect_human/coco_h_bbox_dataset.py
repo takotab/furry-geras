@@ -12,6 +12,8 @@ import pickle
 from collections import defaultdict
 from collections import OrderedDict
 
+import fastai
+from fastai.vision import *
 import numpy as np
 from torch.utils.data import Dataset
 from pycocotools.coco import COCO
@@ -48,7 +50,19 @@ class COCOHumanBBoxDataset(Dataset):
                 for cls in self.classes[1:]
             ]
         )
+        self.make_df()
 
+    def make_df(self):
+        
+        for id in coco.coco.getImgIds():   
+            _humans = 0
+            annIds = coco.coco.getAnnIds(imgIds=id, iscrowd=None)
+            anns = coco.coco.loadAnns(annIds)
+            for obj in anns:
+                if obj['category_id'] == 1:
+                    _humans +=1
+            num_human.append(_humans)
+    
     def get_one_pic_w_bb(self, index):
         im_ann = self.coco.loadImgs(index)[0]
         width = im_ann["width"]
@@ -70,25 +84,24 @@ class COCOHumanBBoxDataset(Dataset):
                 obj["clean_bbox"] = [x1, y1, x2 - x1, y2 - y1]
                 valid_objs.append(obj)
         objs = valid_objs
-
-        rec = []
+        print(objs)
+        labels, classes = [], {}
+        bboxs = []
+        human_found = False
         for obj in objs:
             cls = self._coco_ind_to_class_ind[obj["category_id"]]
             if cls != 1:
                 continue
+            classes[cls] = self.coco.loadCats(cls)[0]["name"]
+            x, y, w, h = obj["clean_bbox"][:4]
+            labels.append(cls)
+            bboxs.append([y, x, y + h, x + w])
 
-            center, scale = self._box2cs(obj["clean_bbox"][:4])
-            rec.append(
-                {
-                    "image": self.image_path_from_index(index),
-                    "center": center,
-                    "scale": scale,
-                    "filename": "",
-                    "imgnum": 0,
-                }
-            )
-
-        return rec
+        img = open_image(self.image_path_from_index(index))
+        bbox = fastai.vision.ImageBBox.create(
+            *img.size, bboxs, labels=labels, classes=classes
+        )
+        return img, bbox
 
     def _box2cs(self, box):
         x, y, w, h = box[:4]

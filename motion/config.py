@@ -5,7 +5,7 @@ def get_image_size(key=None):
     if key is None:
         return resize
     else:
-        return resize
+        return resize[key]
 
 
 def output_shape(key):

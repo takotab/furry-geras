@@ -17,6 +17,7 @@ from collections import OrderedDict
 
 import json_tricks as json
 import numpy as np
+from torch.utils.data import Dataset
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
@@ -53,11 +54,11 @@ class COCODataset(JointsDataset):
         [7,9],[8,10],[9,11],[2,3],[1,2],[1,3],[2,4],[3,5],[4,6],[5,7]]
     """
 
-    def __init__(self, cfg, root, image_set, is_train, transform=None):
-        super().__init__(cfg, root, image_set, is_train, transform)
+    def __init__(self, ):
+        super().__init__(COCOHumanBBoxDataset)
 
-        self.image_width = config.IMAGE_SIZE[0]
-        self.image_height = cfg.MODEL.IMAGE_SIZE[1]
+        self.image_width = config.get_image_size("width")
+        self.image_height = config.get_image_size("height")
         self.aspect_ratio = self.image_width * 1.0 / self.image_height
         self.pixel_std = 200
         self.coco = COCO(self._get_ann_file_keypoint())

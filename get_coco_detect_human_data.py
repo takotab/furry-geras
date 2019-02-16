@@ -36,6 +36,9 @@ def main():
 
     dataset = pd.DataFrame.from_dict(data_dct).T
     dataset.to_csv("coco/one_human.csv", index=False)
+    logger.log(
+        "{} of one human pictures found in {}".format(str(dataset.shape[0]), dataType)
+    )
 
 
 if __name__ == "__main__":

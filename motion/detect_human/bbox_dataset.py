@@ -9,19 +9,45 @@ from PIL import Image
 import numpy as np
 import cv2
 from ast import literal_eval
+import albumentations
 
 from motion import config
 
 logger = logging.getLogger(__name__)
+imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+
+
+def get_aug(aug, min_area=0.0, min_visibility=0.0):
+    return albumentations.Compose(
+        aug,
+        bbox_params={
+            "format": "pascal_voc",
+            "min_area": min_area,
+            "min_visibility": min_visibility,
+            "label_fields": ["category_id"],
+        },
+    )
+
+
+train_augs = [
+    albumentations.RandomBrightnessContrast(always_apply=True),
+    albumentations.ShiftScaleRotate(rotate_limit=10, always_apply=True),
+    albumentations.augmentations.transforms.HorizontalFlip(),
+]
 
 
 class BBoxDataset(Dataset):
-    def __init__(self, csv_file, size=500, transform=None, type="train"):
+    def __init__(self, csv_file, size=500, type="train", aug=None):
         super(BBoxDataset).__init__()
         self.df = pd.read_csv(csv_file, converters={"bbox": literal_eval})
-        self.transform = transform
+        print(self.df.shape)
+        if type == "train":
+            self.aug = get_aug(train_augs) if aug is None else get_aug(aug)
+        else:
+            self.aug = None
         self._size = int(size)
         self.type = type
+        self.debug_stats = {"x": {}, "y": {}}
 
     def __len__(self):
         return self.df.shape[0]
@@ -31,33 +57,46 @@ class BBoxDataset(Dataset):
         x, y, bbox = self._make_crop_sizes(data)
 
         img = cv2.imread(data["filename"])
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
         n_img = np.random.randint(0, 255, size=(self._size, self._size, 3)).astype(
             np.uint8
         )
         n_img[y[0] : y[1], x[0] : x[1], :] = img[y[2] : y[3], x[2] : x[3], :]
-        sample = {"image": np.array(n_img), "bboxes": bbox, "category_id": [0]}
+        sample = {"image": np.array(n_img), "bboxes": [bbox], "category_id": [0]}
 
-        if self.transform:
-            sample = self.transform(sample)
+        if self.aug:
+            item = self.aug(**sample, cat2name={0: "person"})
 
-        return sample
+        im, bbox = item["image"], np.array(item["bboxes"][0])
+        im, bbox = self.normalize_im(im), self.normalize_bbox(bbox)
+
+        return im.transpose(2, 0, 1).astype(np.float32), bbox.astype(np.float32)
+        # return sample
 
     def _make_crop_sizes(self, dct):
         x, y, w, h = dct["bbox"]
-        x, x_bbox = self._resize_one_dims(x, w, dct["width"])
-        y, y_bbox = self._resize_one_dims(y, h, dct["height"])
+        x, x_bbox = self._resize_one_dims(x, w, dct["width"], "x")
+        y, y_bbox = self._resize_one_dims(y, h, dct["height"], "y")
 
-        bbox = [x_bbox[0], y_bbox[0], x_bbox[1] - x_bbox[0], y_bbox[1] - y_bbox[0]]
+        bbox = [x_bbox[0], y_bbox[0], x_bbox[1], y_bbox[1]]
 
         return x, y, bbox
 
-    def _resize_one_dims(self, start, length, orign_len):
+    def normalize_im(self, ary):
+        return (ary / 255 - imagenet_stats[0]) / imagenet_stats[1]
+
+    def normalize_bbox(self, bbox):
+        return bbox / self._size
+
+    def _resize_one_dims(self, start, length, orign_len, debug_x="x"):
         start, length, orign_len, size = (
             int(start),
             int(length),
             int(orign_len),
             self._size,
         )
+        self.debug_stats[debug_x]["in"] = (start, length, orign_len, size)
         if self.type == "train":
             pick_start = np.random.randint
         else:
@@ -73,8 +112,9 @@ class BBoxDataset(Dataset):
                 n_e = size
                 bbox = [0, size]
             else:
-                s = np.min([start, orign_len - size])
-                o_s = int(pick_start(0, s))
+                e = np.min([start, orign_len - size])
+                s = np.max([0, e + length - size])
+                o_s = int(pick_start(s, e))
                 o_e = size + o_s
                 n_s = 0
                 n_e = size
@@ -85,4 +125,5 @@ class BBoxDataset(Dataset):
             n_e = n_s + orign_len
         if bbox is None:
             bbox = [start - o_s + n_s, start + length - o_s + n_s]
+        self.debug_stats[debug_x]["out"] = [n_s, n_e, o_s, o_e], bbox
         return [n_s, n_e, o_s, o_e], bbox

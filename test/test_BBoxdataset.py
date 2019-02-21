@@ -6,8 +6,8 @@ def test_bbox_dataset():
     size = 500
     bbox_data = BBoxDataset("coco/val2017_one_human.csv", size=size)
     sample = bbox_data[0]
-    assert sample["image"].shape == (size, size, 3)
-    assert ["image", "bboxes", "category_id"] == list(sample.keys())
+    assert sample[0].shape == (3, size, size)
+    assert sample[1].shape == (4,)
 
 
 def test_one_dim():
@@ -22,6 +22,10 @@ def test_one_dim():
         # plt.plot(n_img)
         # plt.figure()
         x, bbox = fn(start, length, orign_len)
+        assert bbox[1] > bbox[0] >= 0
+        assert x[1] > x[0] >= 0
+        assert x[2] >= 0
+        assert x[3] > 0
         # print(x)
         n_img[x[0] : x[1]] = or_img[x[2] : x[3]]
         # plt.plot(n_img)

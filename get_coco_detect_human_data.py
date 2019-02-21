@@ -53,20 +53,16 @@ def main():
             bbox = bboxs[0]
             data_dct[f.name] = {
                 "filename": f,
-                "y": bbox[0],
-                "x": bbox[1],
-                "height": bbox[2],
-                "width": bbox[3],
+                "bbox": bbox,
+                "height": height,
+                "width": width,
             }
 
     dataset = pd.DataFrame.from_dict(data_dct).T
     dataset.to_csv(f"coco/{dataType}_one_human.csv", index=False)
 
-    logger.log(
-        msg="{} of one human pictures found in {}".format(
-            str(dataset.shape[0]), dataType
-        ),
-        level=0,
+    print(
+        "{} of one human pictures found in {}".format(str(dataset.shape[0]), dataType)
     )
 
 

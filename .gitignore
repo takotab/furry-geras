@@ -102,7 +102,10 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-**/coco/**
+**/coco/*/**
 **/saved_model/**
 output/**
 furry-geras-app/app/motion/**
+*.mp4
+**instance**
+**person**

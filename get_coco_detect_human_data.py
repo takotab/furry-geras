@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def main():
 
     dataDir = "/home/tako/devtools/furry-geras/coco"
-    dataType = "val2017"
+    dataType = "train2017"
     annFile = "{}/instances_{}.json".format(dataDir, dataType)
     coco = COCO(annFile)
 

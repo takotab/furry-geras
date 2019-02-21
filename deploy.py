@@ -27,6 +27,9 @@ def main():
     copyanything(
         Path(path / "motion"), Path(path / "furry-geras-app" / "app" / "motion")
     )
+    copyanything(
+        Path(path / "models"), Path(path / "furry-geras-app" / "app" / "models")
+    )
 
 
 if __name__ == "__main__":

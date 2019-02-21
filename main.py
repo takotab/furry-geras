@@ -3,7 +3,7 @@ import numpy as np
 import time
 from matplotlib import pyplot as plt
 import torch
-
+import os
 import motion
 
 
@@ -15,5 +15,6 @@ def main(video_dir):
 
 
 if __name__ == "__main__":
-    video_dir = "coco/divera_trend.mp4"
-    main(video_dir)
+    os.system("python -m pytest test/ -k human_loc ")
+    # video_dir = "coco/divera_trend.mp4"
+    # main(video_dir)

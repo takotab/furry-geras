@@ -54,6 +54,8 @@ class BBoxDataset(Dataset):
 
     def __getitem__(self, index):
         data = dict(self.df.iloc[index, :])
+
+        # TODO seperate x,y and use the x in get_human_loc
         x, y, bbox = self._make_crop_sizes(data)
 
         img = cv2.imread(data["filename"])

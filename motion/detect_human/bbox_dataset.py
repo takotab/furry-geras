@@ -63,16 +63,25 @@ class BBoxDataset(Dataset):
             np.uint8
         )
         n_img[y[0] : y[1], x[0] : x[1], :] = img[y[2] : y[3], x[2] : x[3], :]
-        sample = {"image": np.array(n_img), "bboxes": [bbox], "category_id": [0]}
+        item = {"image": np.array(n_img), "bboxes": [bbox], "category_id": [0]}
 
         if self.aug:
-            item = self.aug(**sample, cat2name={0: "person"})
+            item = self.aug(**item, cat2name={0: "person"})
 
         im, bbox = item["image"], np.array(item["bboxes"][0])
         im, bbox = self.normalize_im(im), self.normalize_bbox(bbox)
 
         return im.transpose(2, 0, 1).astype(np.float32), bbox.astype(np.float32)
         # return sample
+
+    def normalize_im(self, ary):
+        return (ary / 255 - imagenet_stats[0]) / imagenet_stats[1]
+
+    def normalize_bbox(self, bbox):
+        result = bbox / self._size
+        print("hello")
+        self.debug_stats["norm_bbox"] = {"in": bbox, "out": result}
+        return result
 
     def _make_crop_sizes(self, dct):
         x, y, w, h = dct["bbox"]
@@ -82,12 +91,6 @@ class BBoxDataset(Dataset):
         bbox = [x_bbox[0], y_bbox[0], x_bbox[1], y_bbox[1]]
 
         return x, y, bbox
-
-    def normalize_im(self, ary):
-        return (ary / 255 - imagenet_stats[0]) / imagenet_stats[1]
-
-    def normalize_bbox(self, bbox):
-        return bbox / self._size
 
     def _resize_one_dims(self, start, length, orign_len, debug_x="x"):
         start, length, orign_len, size = (
@@ -112,8 +115,14 @@ class BBoxDataset(Dataset):
                 n_e = size
                 bbox = [0, size]
             else:
-                e = np.min([start, orign_len - size])
-                s = np.max([0, e + length - size])
+                if orign_len - size < start:
+                    e = start
+                else:
+                    e = orign_len - size
+                    e = np.min([start, orign_len - size])
+
+                s = np.max([0, start + length - size])
+                s, e = [np.min([se, orign_len - size]) for se in [s, e]]
                 o_s = int(pick_start(s, e))
                 o_e = size + o_s
                 n_s = 0

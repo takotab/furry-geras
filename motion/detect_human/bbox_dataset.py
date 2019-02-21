@@ -79,7 +79,6 @@ class BBoxDataset(Dataset):
 
     def normalize_bbox(self, bbox):
         result = bbox / self._size
-        print("hello")
         self.debug_stats["norm_bbox"] = {"in": bbox, "out": result}
         return result
 
@@ -116,7 +115,8 @@ class BBoxDataset(Dataset):
                 [n_s, n_e, o_s, o_e] = smaller_length_bigger_or_len(
                     start, length, orign_len, size, pick_start
                 )
-
+        elif orign_len == size:
+            n_s, n_e, o_s, o_e = 0, 500, 0, 500
         else:
             o_s = 0
             o_e = orign_len

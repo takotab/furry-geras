@@ -92,7 +92,7 @@ class BBoxDataset(Dataset):
 
         return x, y, bbox
 
-    def _resize_one_dims(self, start, length, orign_len, debug_x="x"):
+    def _resize_one_dims(self, start, length, orign_len, debug_x="x", pick_start=None):
         start, length, orign_len, size = (
             int(start),
             int(length),
@@ -100,10 +100,8 @@ class BBoxDataset(Dataset):
             self._size,
         )
         self.debug_stats[debug_x]["in"] = (start, length, orign_len, size)
-        if self.type == "train":
-            pick_start = np.random.randint
-        else:
-            pick_start = lambda o, u: np.mean([o, u])
+        pick_start = self.handle_pick_start(pick_start)
+
         bbox = None
         if orign_len > size:
             if length > size:
@@ -115,18 +113,10 @@ class BBoxDataset(Dataset):
                 n_e = size
                 bbox = [0, size]
             else:
-                if orign_len - size < start:
-                    e = start
-                else:
-                    e = orign_len - size
-                    e = np.min([start, orign_len - size])
+                [n_s, n_e, o_s, o_e] = smaller_length_bigger_or_len(
+                    start, length, orign_len, size, pick_start
+                )
 
-                s = np.max([0, start + length - size])
-                s, e = [np.min([se, orign_len - size]) for se in [s, e]]
-                o_s = int(pick_start(s, e))
-                o_e = size + o_s
-                n_s = 0
-                n_e = size
         else:
             o_s = 0
             o_e = orign_len
@@ -136,3 +126,27 @@ class BBoxDataset(Dataset):
             bbox = [start - o_s + n_s, start + length - o_s + n_s]
         self.debug_stats[debug_x]["out"] = [n_s, n_e, o_s, o_e], bbox
         return [n_s, n_e, o_s, o_e], bbox
+
+    def handle_pick_start(self, pick_start):
+        if pick_start:
+            return lambda o, u: pick_start([o, u])
+        elif self.type == "train":
+            return np.random.randint
+        else:
+            return lambda o, u: np.mean([o, u])
+
+
+def smaller_length_bigger_or_len(start, length, orign_len, size, pick_start):
+    if orign_len - size < start:
+        e = start
+    else:
+        e = orign_len - size
+        e = np.min([start, orign_len - size])
+
+    s = np.max([0, start + length - size])
+    s, e = [np.min([se, orign_len - size]) for se in [s, e]]
+    o_s = int(pick_start(s, e))
+    o_e = size + o_s
+    n_s = 0
+    n_e = size
+    return [n_s, n_e, o_s, o_e]

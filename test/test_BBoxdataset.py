@@ -21,13 +21,14 @@ def test_one_dim():
         # plt.plot(or_img)
         # plt.plot(n_img)
         # plt.figure()
-        x, bbox = fn(start, length, orign_len)
-        assert bbox[1] > bbox[0] >= 0
-        assert x[1] > x[0] >= 0
-        assert x[2] >= 0
-        assert x[3] > 0
-        # print(x)
-        n_img[x[0] : x[1]] = or_img[x[2] : x[3]]
+        for pick_start in [np.min,np.max]:
+            x, bbox = fn(start, length, orign_len)
+            assert bbox[1] > bbox[0] >= 0
+            assert x[1] > x[0] >= 0
+            assert x[2] >= 0
+            assert x[3] > 0
+            # print(x)
+            n_img[x[0] : x[1]] = or_img[x[2] : x[3]]
         # plt.plot(n_img)
         # plt.plot([bbox[0], bbox[1]], [1, 1])
         # plt.title(str(x) + str(bbox))
@@ -46,3 +47,8 @@ def test_one_dim():
     start, length, orign_len, size = 100, 501, 640, 500
     test_fn(bbox_ds._resize_one_dims, start, length, orign_len, size)
 
+    start, length, orign_len, size = 92, 338, 640, 500
+    test_fn(bbox_ds._resize_one_dims, start, length, orign_len, size)
+
+    start, length, orign_len, size = 269, 358, 640, 500
+    test_fn(bbox_ds._resize_one_dims, start, length, orign_len, size)

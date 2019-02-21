@@ -145,7 +145,10 @@ def smaller_length_bigger_or_len(start, length, orign_len, size, pick_start):
 
     s = np.max([0, start + length - size])
     s, e = [np.min([se, orign_len - size]) for se in [s, e]]
-    o_s = int(pick_start(s, e))
+    if s != e:
+        o_s = int(pick_start(s, e))
+    else:
+        o_s = e
     o_e = size + o_s
     n_s = 0
     n_e = size

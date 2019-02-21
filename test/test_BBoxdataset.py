@@ -52,3 +52,6 @@ def test_one_dim():
 
     start, length, orign_len, size = 269, 358, 640, 500
     test_fn(bbox_ds._resize_one_dims, start, length, orign_len, size)
+
+    start, length, orign_len, size = 0, 250, 640, 500
+    test_fn(bbox_ds._resize_one_dims, start, length, orign_len, size)

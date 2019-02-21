@@ -15,7 +15,7 @@ import motion
 model_file_url = (
     "https://drive.google.com/uc?export=download&id=1RVKXdDggdXnb9UU4efosCBLZMkj0vXtN"
 )
-model_file = "saved_model/pose_resnet_50_256x192.pth.tar"
+model_file = "models/pose_resnet_50_256x192.pth.tar"
 
 path = Path(__file__).parent
 app = Starlette()

@@ -11,10 +11,9 @@ from torch.utils.data import Dataset
 logger = logging.getLogger(__name__)
 
 
-def main():
+def make_new_one_human_csv(dataType="train2017"):
 
     dataDir = "/home/tako/devtools/furry-geras/coco"
-    dataType = "train2017"
     annFile = "{}/instances_{}.json".format(dataDir, dataType)
     coco = COCO(annFile)
 
@@ -67,4 +66,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    make_new_one_human_csv()

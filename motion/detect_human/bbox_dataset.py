@@ -67,6 +67,7 @@ class BBoxDataset(Dataset):
 
         if self.aug:
             item = self.aug(**item, cat2name={0: "person"})
+            item = self.keep_a_bbox(item, index)
 
         im, bbox = item["image"], np.array(item["bboxes"][0])
         im, bbox = self.normalize_im(im), self.normalize_bbox(bbox)
@@ -134,6 +135,20 @@ class BBoxDataset(Dataset):
             return np.random.randint
         else:
             return lambda o, u: np.mean([o, u])
+
+    def keep_a_bbox(self, item, index):
+        if len(item["bboxes"]) == 4:
+            item["bboxes"] = [item["bboxes"]]
+        elif len(item["bboxes"]) == 0:
+            Warning("len(item['bboxes']) == 0 on index {}".format(str(index)))
+            item["bboxes"] = [[0, 0, 0, 0]]
+
+        assert (
+            len(item["bboxes"]) == 1
+        ), "bbox should have size 1 and but item[bbox]: {}\n Error is with index {}, {}, {}".format(
+            str(item["bboxes"]), str(index), self.type, self.aug
+        )
+        return item
 
 
 def smaller_length_bigger_or_len(start, length, orign_len, size, pick_start):

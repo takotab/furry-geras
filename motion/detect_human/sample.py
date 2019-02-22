@@ -4,7 +4,8 @@ import os
 
 from pathlib import Path
 import pandas as pd
-from torch.utils.data import Dataset
+
+# from torch.nn import M
 from PIL import Image
 import numpy as np
 import cv2
@@ -17,84 +18,22 @@ logger = logging.getLogger(__name__)
 imagenet_stats = ([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 
 
-def get_aug(aug, min_area=0.0, min_visibility=0.0):
-    return albumentations.Compose(
-        aug,
-        bbox_params={
-            "format": "pascal_voc",
-            "min_area": min_area,
-            "min_visibility": min_visibility,
-            "label_fields": ["category_id"],
-        },
-    )
-
-
-train_augs = [
-    albumentations.RandomBrightnessContrast(always_apply=True),
-    albumentations.ShiftScaleRotate(rotate_limit=10, always_apply=True),
-    albumentations.augmentations.transforms.HorizontalFlip(),
-]
-
-
-class BBoxDataset(Dataset):
-    def __init__(self, csv_file, size=500, type="train", aug=None):
-        super(BBoxDataset).__init__()
-        if csv_file is None:
-            csv_file = get_one_sample_csv()
-        self.df = pd.read_csv(csv_file, converters={"bbox": literal_eval})
-        print("Dataset has {} samples.".format((self.df.shape[0])))
-        if type == "train":
-            self.aug = get_aug(train_augs) if aug is None else get_aug(aug)
-        else:
-            self.aug = None
-        self._size = int(size)
-        self.type = type
-        self.debug_stats = {"x": {}, "y": {}}
-
-    def __len__(self):
-        return self.df.shape[0]
-
-    def __getitem__(self, index):
-        data = dict(self.df.iloc[index, :])
-
-        # TODO seperate x,y and use the x in get_human_loc
-        img = cv2.imread(data["filename"])
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
-        if self.type == "test":
-            data["height"], data["width"] = img.shape[:2]
-            data["bbox"] = [0, 0, data["height"], data["width"]]
-
-        x, y, bbox = self._make_crop_sizes(data)
-
-        n_img = np.random.randint(0, 255, size=(self._size, self._size, 3)).astype(
-            np.uint8
-        )
-        n_img[y[0] : y[1], x[0] : x[1], :] = img[y[2] : y[3], x[2] : x[3], :]
-        item = {"image": np.array(n_img), "bboxes": [bbox], "category_id": [0]}
-
-        if self.aug:
-            item = self.aug(**item, cat2name={0: "person"})
-            item = self.keep_a_bbox(item, index)
-
-        im, bbox = item["image"], np.array(item["bboxes"][0])
-        im, bbox = self.normalize_im(im), self.normalize_bbox(bbox)
-
-        return im.transpose(2, 0, 1).astype(np.float32), bbox.astype(np.float32)
-        # return sample
-
-    def normalize_im(self, ary):
-        return ((ary / 255) - imagenet_stats[0]) / imagenet_stats[1]
-
-    def normalize_bbox(self, bbox):
-        result = bbox / self._size
-        self.debug_stats["norm_bbox"] = {"in": bbox, "out": result}
-        return result
+class Sample(object):
+    def __init__(self, datadct):
+        self.bbox = None
+        for k, v in datadct.items():
+            setattr(self, k, v)
 
     def _make_crop_sizes(self, dct):
-        x, y, w, h = dct["bbox"]
-        x, x_bbox = self._resize_one_dims(x, w, dct["width"], "x")
-        y, y_bbox = self._resize_one_dims(y, h, dct["height"], "y")
+        if self.bbox:
+            x, y, bbox = self.crop_for_training()
+        else:
+            pass
+
+    def crop_for_training(self):
+        x, y, w, h = self.bbox
+        x, x_bbox = self._resize_one_dims(x, w, self.width, "x")
+        y, y_bbox = self._resize_one_dims(y, h, self.height, "y")
 
         bbox = [x_bbox[0], y_bbox[0], x_bbox[1], y_bbox[1]]
 
@@ -158,9 +97,6 @@ class BBoxDataset(Dataset):
         )
         return item
 
-    def set_item(self, item):
-        return item
-
 
 def smaller_length_bigger_or_len(start, length, orign_len, size, pick_start):
     if orign_len - size < start:
@@ -179,7 +115,3 @@ def smaller_length_bigger_or_len(start, length, orign_len, size, pick_start):
     n_s = 0
     n_e = size
     return [n_s, n_e, o_s, o_e]
-
-
-def get_one_sample_csv():
-    return str(Path(Path(__file__).parent / "one_sample_dataset.csv"))

@@ -11,10 +11,12 @@ def main(video_dir):
 
     # Create a VideoCapture object and read from input file
     # If the input is the camera, pass 0 instead of the video file name
+
     motion.make_posevid(video_dir)
 
 
 if __name__ == "__main__":
-    os.system("python -m pytest test/ -k human_loc ")
+    motion.detect_human.bbox_dataset.get_one_sample_csv()
+    os.system("python -m pytest test/  ")
     # video_dir = "coco/divera_trend.mp4"
     # main(video_dir)

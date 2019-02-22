@@ -40,7 +40,7 @@ class BBoxDataset(Dataset):
     def __init__(self, csv_file, size=500, type="train", aug=None):
         super(BBoxDataset).__init__()
         self.df = pd.read_csv(csv_file, converters={"bbox": literal_eval})
-        print(self.df.shape)
+        print("Dataset has {} samples.".format((self.df.shape[0])))
         if type == "train":
             self.aug = get_aug(train_augs) if aug is None else get_aug(aug)
         else:
@@ -78,7 +78,7 @@ class BBoxDataset(Dataset):
         # return sample
 
     def normalize_im(self, ary):
-        return (ary / 255 - imagenet_stats[0]) / imagenet_stats[1]
+        return ((ary / 255) - imagenet_stats[0]) / imagenet_stats[1]
 
     def normalize_bbox(self, bbox):
         result = bbox / self._size

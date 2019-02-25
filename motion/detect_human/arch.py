@@ -2,16 +2,26 @@
 import torch
 import torch.nn as nn
 from torchvision import models
+from fastai.callbacks.hooks import num_features_model
+from fastai.vision import create_head
 
 
-class HumanBBox(nn.module):
-    def __init__(self, num_outpur, arch=None):
+class HumanBBox(nn.Module):
+    def __init__(self, num_outpur=4, arch=None):
+        super(HumanBBox, self).__init__()
+
         if arch is None:
-            arch = models.resnet50()
-        mdl = [arch]
+            arch = models.resnet50(pretrained=True)
+        self.cnn = arch
+        head = bn_drop_lin(1000, 512, p=0.25, actn=torch.nn.ReLU(inplace=True))
+        head += bn_drop_lin(512, num_outpur, p=0.5)
+        self.head = nn.Sequential(*head)
 
-        mdl.append(bn_drop_lin(arch))
-        nn.Sequential()
+    def forward(self, x):
+        x = self.cnn(x)
+        x = self.head(x)
+
+        return 1.02 * x.sigmoid_() - 0.01
 
 
 def bn_drop_lin(n_in: int, n_out: int, bn: bool = True, p: float = 0.0, actn=None):
@@ -23,3 +33,9 @@ def bn_drop_lin(n_in: int, n_out: int, bn: bool = True, p: float = 0.0, actn=Non
     if actn is not None:
         layers.append(actn)
     return layers
+
+
+# if __name__ == "__main__":
+#     a = torch.rand(4, 3, 224, 224)
+#     mdl = HumanBBox(4)
+#     print(mdl(a))

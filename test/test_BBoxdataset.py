@@ -3,13 +3,15 @@ from motion.detect_human import BBoxDataset
 
 
 def test_make_inference():
-    bbox_ds = BBoxDataset(None)
+    bbox_ds = BBoxDataset(None, fastai_out=True)
     assert len(bbox_ds) == 1
 
 
 def test_bbox_dataset():
     size = 500
-    bbox_data = BBoxDataset("test/data/one_sample_dataset.csv", size=size, type="valid")
+    bbox_data = BBoxDataset(
+        "test/data/one_sample_dataset.csv", size=size, type="valid", fastai_out=True
+    )
     sample = bbox_data[0]
     assert sample[0].shape == (3, size, size)
     assert sample[0].dtype == np.float32

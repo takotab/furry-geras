@@ -16,7 +16,8 @@ def main(video_dir):
 
 
 if __name__ == "__main__":
-    motion.detect_human.bbox_dataset.get_one_sample_csv()
-    os.system("python -m pytest test/  ")
+    motion.train_pipeline.train()
+    # motion.detect_human.bbox_dataset.get_one_sample_csv()
+    # os.system("python -m pytest test/  ")
     # video_dir = "coco/divera_trend.mp4"
     # main(video_dir)

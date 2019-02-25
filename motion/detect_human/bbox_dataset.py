@@ -4,6 +4,7 @@ import os
 
 from pathlib import Path
 import pandas as pd
+import torch
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 import numpy as np
@@ -33,11 +34,12 @@ train_augs = [
     albumentations.RandomBrightnessContrast(always_apply=True),
     albumentations.ShiftScaleRotate(rotate_limit=10, always_apply=True),
     albumentations.augmentations.transforms.HorizontalFlip(),
+    # albumentations.augmentations.transforms.RandomCrop(448, 448, p=1.0),
 ]
 
 
 class BBoxDataset(Dataset):
-    def __init__(self, csv_file, size=500, type="train", aug=None, fastai_out=False):
+    def __init__(self, csv_file, size=500, type="train", aug=None, fastai_out=True):
         super(BBoxDataset).__init__()
         if csv_file is None:
             csv_file = get_one_sample_csv()
@@ -51,18 +53,6 @@ class BBoxDataset(Dataset):
         self.type = type
         self.debug_stats = {"x": {}, "y": {}}
         self.fastai_out = fastai_out
-        if not self.fastai_out:
-            normalize = transforms.Normalize(
-                mean=imagenet_stats[0], std=imagenet_stats[1]
-            )
-            self.transform = transforms.Compose(
-                [
-                    transforms.Scale(256),
-                    transforms.CenterCrop(224),
-                    transforms.ToTensor(),
-                    normalize,
-                ]
-            )
 
     def __len__(self):
         return self.df.shape[0]
@@ -91,12 +81,14 @@ class BBoxDataset(Dataset):
             item = self.keep_a_bbox(item, index)
 
         im, bbox = item["image"], np.array(item["bboxes"][0])
+        im, bbox = self.normalize_im(im), self.normalize_bbox(bbox)
         if self.fastai_out:
-            im, bbox = self.normalize_im(im), self.normalize_bbox(bbox)
             return im.transpose(2, 0, 1).astype(np.float32), bbox.astype(np.float32)
-        im = self.transform(im)
-        return {"data": im, "target": bbox}
-        # return sample
+
+        return {
+            "data": transforms.ToTensor()(im).float(),
+            "target": torch.Tensor(bbox).float(),
+        }
 
     def normalize_im(self, ary):
         return ((ary / 255) - imagenet_stats[0]) / imagenet_stats[1]

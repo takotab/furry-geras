@@ -14,7 +14,8 @@ def filename_maker(name=None):
     if not os.path.exists("output"):
         os.mkdir("output")
     print(dir)
-    os.mkdir(dir)
+    if not os.path.exists(dir):
+        os.mkdir(dir)
     return Path(dir)
 
 

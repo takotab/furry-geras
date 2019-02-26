@@ -56,7 +56,12 @@ def get_video_array(video_dir):
     # frameHeight = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     buf = np.empty(
-        (frameCount, config.resize["height"], config.resize["width"], 3),
+        (
+            frameCount,
+            config.get_image_size("height"),
+            config.get_image_size("width"),
+            3,
+        ),
         np.dtype("uint8"),
     )
 
@@ -73,4 +78,6 @@ def get_video_array(video_dir):
 
 
 def data_resize(data_array):
-    return cv2.resize(data_array, (config.resize["width"], config.resize["height"]))
+    return cv2.resize(
+        data_array, (config.get_image_size("width"), config.get_image_size("height"))
+    )

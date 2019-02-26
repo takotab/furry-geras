@@ -41,7 +41,7 @@ def pose_estimate(data_array, model=None, device=None, data=None, batch_size=32)
     if data is None:
         data = DataLoader(Video(data_array), batch_size=batch_size)
     pred, val = [], []
-    print("batch_size", 32)
+    print("batch_size", batch_size)
     for input in data:
         output = model(input.to(device))
         _pred, _val = pose_resnet.inference.get_max_preds(output.detach().cpu().numpy())

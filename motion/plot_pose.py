@@ -32,4 +32,4 @@ def plot_pose(data_numpy, points=None, name=None):
 
 
 def get_scale(key):
-    return config.resize[key] / config.output_shape(key)
+    return config.get_image_size(key) / config.output_shape(key)

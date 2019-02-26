@@ -53,6 +53,7 @@ class BBoxDataset(Dataset):
         self.type = type
         self.debug_stats = {"x": {}, "y": {}}
         self.fastai_out = fastai_out
+        torch.random.manual_seed(42)
 
     def __len__(self):
         return self.df.shape[0]

@@ -11,13 +11,13 @@ from neural_pipeline import (
     FileStructManager,
 )
 
-from ..detect_human import HumanBBox, BBoxDataset
+from ..detect_human import HumanBBox, BBoxDataset, IoU
 
 SZ = 500
 
 
-def train(num_epochs=3):
-    fsm = FileStructManager(base_dir="models", is_continue=False)
+def train(num_epochs=5):
+    fsm = FileStructManager(base_dir="models/UoI/", is_continue=False)
     model = HumanBBox()
 
     train_dataset = DataProducer(
@@ -27,12 +27,15 @@ def train(num_epochs=3):
             )
         ],
         batch_size=8,
-        num_workers=2,
+        num_workers=5,
     )
     validation_dataset = DataProducer(
         [
             BBoxDataset(
-                "coco/val2017_one_human_val.csv", size=SZ, type="val", fastai_out=False
+                "coco/val2017_one_human_train.csv",
+                size=SZ,
+                type="val",
+                fastai_out=False,
             )
         ],
         batch_size=4,
@@ -41,14 +44,18 @@ def train(num_epochs=3):
 
     train_config = TrainConfig(
         [TrainStage(train_dataset), ValidationStage(validation_dataset)],
-        torch.nn.L1Loss(),
-        torch.optim.SGD(model.head.parameters(), lr=5e-2, momentum=0.8),
+        # torch.nn.L1Loss(),
+        IoU,
+        torch.optim.SGD(model.parameters(), lr=5e-3, momentum=0.8),
     )
 
-    trainer = Trainer(model, train_config, fsm, torch.device("cuda:0")).set_epoch_num(
-        num_epochs
+    trainer = (
+        Trainer(model, train_config, fsm, torch.device("cuda:0")).set_epoch_num(
+            num_epochs
+        )
+        # .enable_lr_decaying(0.97, 1000)
     )
-    trainer.monitor_hub.add_monitor(TensorboardMonitor(fsm, is_continue=False))
+    trainer.monitor_hub.add_monitor(TensorboardMonitor(fsm, is_continue=True))
     # .add_monitor(LogMonitor(fsm)
-
+    # .resume(from_best_checkpoint=False)
     trainer.train()

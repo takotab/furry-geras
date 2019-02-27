@@ -34,5 +34,5 @@ def make_posevid(*args, **kwargs):
     vp.make_posevid(*args, **kwargs)
 
 
-def get_model(layers=50):
-    return pose_resnet.get_fully_pretrained_pose_net()
+def get_model(**kwargs):
+    return pose_resnet.get_fully_pretrained_pose_net(**kwargs)

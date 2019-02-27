@@ -1,4 +1,4 @@
-from motion import get_human_loc
+from motion.detect_human import get_human_loc
 
 f = "/home/tako/devtools/furry-geras/test/data/000000050638.jpg"
 size = 393, 640

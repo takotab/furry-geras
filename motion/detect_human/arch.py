@@ -5,25 +5,29 @@ from torchvision import models
 
 # from fastai.callbacks.hooks import num_features_model
 # from fastai.vision import create_head
-from ..fastai_utils import *
+from .fastai_utils import *
 
 
 class HumanBBox(nn.Module):
-    def __init__(self, num_outpur=4, arch=None):
+    def __init__(self, ap_sz=16, p=0.5, num_outpur=4, arch=None):
         super(HumanBBox, self).__init__()
 
         if arch is None:
-            arch = models.resnet50(pretrained=True)
+            arch = models.resnet18(pretrained=True)
         self.cnn = nn.Sequential(*list(arch.children())[:2])
-        self.in_between = nn.Sequential(*[AdaptiveConcatPool2d((8, 8)), Flatten()])
-
-        head = bn_drop_lin(8192, 512, p=0.25, actn=torch.nn.ReLU(inplace=True))
-        head += bn_drop_lin(512, num_outpur, p=0.5)
+        self.cnn2 = nn.Sequential(nn.Conv2d(64, 32, 1))
+        self.in_between = nn.Sequential(
+            *[AdaptiveConcatPool2d((ap_sz, ap_sz)), Flatten()]
+        )
+        self.num_channels = int(4096 / ((ap_sz ** 2) * 2))
+        head = bn_drop_lin(4096, 512, p=p / 2, actn=torch.nn.ReLU(inplace=True))
+        head += bn_drop_lin(512, num_outpur, p=p)
         self.head = nn.Sequential(*head)
 
     def forward(self, x):
         x = self.cnn(x)
-        x = self.in_between(x)
+        x = self.cnn2(x)
+        x = self.in_between(x[:, : self.num_channels, :, :])
         x = self.head(x)
 
         return x.sigmoid_()

@@ -26,7 +26,7 @@ class FlukeDetector2(nn.Module):
 
 def load_mdl(f_mdl=None):
     if f_mdl is None:
-        f_mdl = "models/fastai_bbox_detect_humans_train1.pth"
+        f_mdl = "models/fastai_bbox_detect_humans_res18_arch2.pth"
     assert os.path.exists(f_mdl)
     weights = torch.load(f_mdl)["model"]
     mdl = FlukeDetector2(arch=models.resnet50)

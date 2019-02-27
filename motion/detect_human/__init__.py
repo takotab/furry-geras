@@ -5,3 +5,5 @@ from .get_human_loc import get_human_loc
 from .arch import HumanBBox
 from .iou import IoU
 from .load_mdl import load_mdl
+from .arch import HumanBBox
+from . import fastai_utils

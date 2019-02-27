@@ -12,6 +12,18 @@ class Flatten(nn.Module):
     def forward(self, x):
         return x.view(-1) if self.full else x.view(x.size(0), -1)
 
+class ConcatPool2d(nn.Module):
+    "Layer that concats `AvgPool2d` and `MaxPool2d`."
+
+    def __init__(self, kernel_sz=None):
+        "Output will be 2*sz or 2 if sz is None"
+        super().__init__()
+        kernel_sz = kernel_sz or 1
+        self.ap,self.mp = nn.AvgPool2d(kernel_sz), nn.MaxPool2d(kernel_sz)
+    def forward(self, x):
+        return torch.cat([self.mp(x), self.ap(x)], 1)
+
+
 
 class AdaptiveConcatPool2d(nn.Module):
     "FASTAI: Layer that concats `AdaptiveAvgPool2d` and `AdaptiveMaxPool2d`."

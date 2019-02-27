@@ -15,10 +15,18 @@ class HumanBBox(nn.Module):
         if arch is None:
             arch = models.resnet18(pretrained=True)
         self.cnn = nn.Sequential(*list(arch.children())[:2])
-        self.cnn2 = nn.Sequential(nn.Conv2d(64, 32, 1))
-        self.in_between = nn.Sequential(
-            *[AdaptiveConcatPool2d((ap_sz, ap_sz)), Flatten()]
+        self.in_between = nn.Sequential(*[AdaptiveConcatPool2d((32, 32))])
+        self.cnn2 = nn.Sequential(
+            *[
+                nn.Conv2d(128, 64, 1),
+                nn.Conv2d(64, 32, 1),
+                nn.Conv2d(32, 4, 1),
+                Flatten(),
+            ]
         )
+        # self.in_between = nn.Sequential(*[AdaptiveConcatPool2d((32, 32))])
+        # nn.Dropout2d(p, inplace=True),
+
         self.num_channels = int(4096 / ((ap_sz ** 2) * 2))
         head = bn_drop_lin(4096, 512, p=p / 2, actn=torch.nn.ReLU(inplace=True))
         head += bn_drop_lin(512, num_outpur, p=p)
@@ -26,8 +34,8 @@ class HumanBBox(nn.Module):
 
     def forward(self, x):
         x = self.cnn(x)
+        x = self.in_between(x)
         x = self.cnn2(x)
-        x = self.in_between(x[:, : self.num_channels, :, :])
         x = self.head(x)
 
         return x.sigmoid_()

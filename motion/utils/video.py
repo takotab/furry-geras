@@ -48,7 +48,7 @@ def make_video(images, name=None, fps=30, size=None, is_color=True, format="XVID
     return vid_dir
 
 
-def get_video_array(video_dir):
+def get_video_array(video_dir, resize=None):
 
     cap = cv2.VideoCapture(video_dir)
     frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -70,14 +70,14 @@ def get_video_array(video_dir):
 
     while fc < frameCount and ret:
         ret, b = cap.read()
-        buf[fc] = data_resize(b)
+        if resize is not None:
+            b = data_resize(b, resize)
+        buf[fc] = b
         fc += 1
 
     cap.release()
     return buf
 
 
-def data_resize(data_array):
-    return cv2.resize(
-        data_array, (config.get_image_size("width"), config.get_image_size("height"))
-    )
+def data_resize(data_array, resize):
+    return cv2.resize(data_array, resize)

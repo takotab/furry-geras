@@ -9,34 +9,37 @@ from .fastai_utils import *
 
 
 class HumanBBox(nn.Module):
-    def __init__(self, ap_sz=16, p=0.5, num_outpur=4, arch=None):
+    def __init__(self, ap_sz=8, p=0.5, num_outpur=4, arch=None):
         super(HumanBBox, self).__init__()
 
         if arch is None:
-            arch = models.resnet18(pretrained=True)
+            arch = models.resnet34(pretrained=True)
         self.cnn = nn.Sequential(*list(arch.children())[:2])
-        self.in_between = nn.Sequential(*[AdaptiveConcatPool2d((32, 32))])
-        self.cnn2 = nn.Sequential(
-            *[
-                nn.Conv2d(128, 64, 1),
-                nn.Conv2d(64, 32, 1),
-                nn.Conv2d(32, 4, 1),
-                Flatten(),
-            ]
+        self.in_between = nn.Sequential(
+            *[AdaptiveConcatPool2d((ap_sz, ap_sz)), Flatten()]
         )
+        # self.cnn2 = nn.Sequential(
+        #     *[
+        #         nn.Conv2d(128, 64, 1),
+        #         nn.Conv2d(64, 32, 1),
+        #         nn.Conv2d(32, 4, 1),
+        #         nn.Conv2d(4, 1, 1),
+        #         Flatten(),
+        #     ]
+        # )
         # self.in_between = nn.Sequential(*[AdaptiveConcatPool2d((32, 32))])
         # nn.Dropout2d(p, inplace=True),
 
-        self.num_channels = int(4096 / ((ap_sz ** 2) * 2))
+        # self.num_channels = int(4096 / ((ap_sz ** 2) * 2))
         head = bn_drop_lin(4096, 512, p=p / 2, actn=torch.nn.ReLU(inplace=True))
         head += bn_drop_lin(512, num_outpur, p=p)
         self.head = nn.Sequential(*head)
 
     def forward(self, x):
         x = self.cnn(x)
-        x = self.in_between(x)
-        x = self.cnn2(x)
-        x = self.head(x)
+        x = self.in_between(x[:, :32, :, :])
+        # x = self.cnn2(x)
+        x = self.head(x[:, :4096])
 
         return x.sigmoid_()
 

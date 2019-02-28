@@ -19,11 +19,9 @@ def load_mdl(f_mdl=None):
     if f_mdl is None:
         f_mdl = "models/detect_humans_res18_arch2.pt"
     assert os.path.exists(f_mdl)
+    print("loading {f_mdl}")
     mdl = HumanBBox()
 
     mdl.load_state_dict(torch.load(f_mdl), strict=False)
     return mdl
-
-
-#%%
 

@@ -19,7 +19,7 @@ def load_detect_human_mdl(**kwargs):
 
 
 def test_human_loc():
-    mdl = load_detect_human_mdl(f_mdl="models/fastai_bbox_detect_humans_test.pth")
+    mdl = load_detect_human_mdl()
     vid_array = get_video_array(f)
     size = [vid_array.shape[s] for s in (1, 2, 1, 2)]
     bbox = get_human_loc(mdl, vid_array)

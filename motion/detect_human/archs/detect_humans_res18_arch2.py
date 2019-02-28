@@ -1,11 +1,8 @@
-# not yet done
 import torch
 import torch.nn as nn
 from torchvision import models
 
-# from fastai.callbacks.hooks import num_features_model
-# from fastai.vision import create_head
-from .fastai_utils import *
+from ..fastai_utils import AdaptiveConcatPool2d, Flatten, bn_drop_lin
 
 
 class HumanBBox(nn.Module):
@@ -21,14 +18,9 @@ class HumanBBox(nn.Module):
                 nn.Conv2d(128, 64, 1),
                 nn.Conv2d(64, 32, 1),
                 nn.Conv2d(32, 4, 1),
-                # nn.Conv2d(4, 1, 1),
                 Flatten(),
             ]
         )
-        # self.in_between = nn.Sequential(*[AdaptiveConcatPool2d((32, 32))])
-        # nn.Dropout2d(p, inplace=True),
-
-        # self.num_channels = int(4096 / ((ap_sz ** 2) * 2))
         head = bn_drop_lin(4096, 512, p=p / 2, actn=torch.nn.ReLU(inplace=True))
         head += bn_drop_lin(512, num_outpur, p=p)
         self.head = nn.Sequential(*head)
@@ -37,16 +29,7 @@ class HumanBBox(nn.Module):
         x = self.cnn(x)
         x = self.in_between(x)
         x = self.cnn2(x)
-        x = self.head(x[:, :4096])
+        x = self.head(x)
 
         return x.sigmoid_()
-
-
-if __name__ == "__main__":
-    a = torch.rand(4, 3, 224, 224)
-    mdl = HumanBBox(4)
-    assert mdl(a).shape == (4, 4)
-
-    a = torch.rand(4, 3, 500, 500)
-    assert mdl(a).shape == (4, 4)
 

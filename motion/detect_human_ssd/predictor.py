@@ -4,6 +4,8 @@ from . import box_utils
 from .data_preprocessing import PredictionTransform
 from .utils_misc import Timer
 
+from torch.utils.data import Dataset, DataLoader
+
 
 class Predictor:
     def __init__(
@@ -39,9 +41,11 @@ class Predictor:
 
         self.timer = Timer()
 
-    def predict(self, image, top_k=-1, prob_threshold=None):
-        cpu_device = torch.device("cpu")
+    def predict(self, image, top_k=-1, prob_threshold=None, video=False):
+        if not prob_threshold:
+            prob_threshold = self.filter_threshold
         height, width, _ = image.shape
+
         image = self.transform(image)
         images = image.unsqueeze(0)
         images = images.to(self.device)
@@ -49,10 +53,35 @@ class Predictor:
             self.timer.start()
             scores, boxes = self.net.forward(images)
             print("Inference time: ", self.timer.end())
-        boxes = boxes[0]
-        scores = scores[0]
-        if not prob_threshold:
-            prob_threshold = self.filter_threshold
+        return self.procces_images(boxes, scores, height, width, prob_threshold, top_k)
+
+    def predict_video(self, video, top_k, prob_threshold, bs=16):
+        vid_dl = DataLoader(Video(video, self.transform), batch_size=bs)
+        scores, boxes = [], []
+        with torch.no_grad():
+            for images in vid_dl:
+                self.timer.start()
+                _score, _box = self.net.forward(images)
+                print("Inference time: ", self.timer.end())
+                scores.append(_score)
+                boxes.append(_box)
+        scores, boxes = torch.cat(scores, 0), torch.cat(boxes, 0)
+        # print(scores.shape)
+        height, width, _ = video[0].shape
+        boxs, labels, probs = [], [], []
+        for i in range(scores.shape[0]):
+            _box, _label, _probs = self.procces_images(
+                boxes, scores, height, width, prob_threshold, i
+            )
+            boxs.append(_box)
+            labels.append(_label)
+            probs.append(_probs)
+        return boxs, labels, probs
+
+    def procces_images(self, boxes, scores, height, width, prob_threshold, top_k, i=0):
+        cpu_device = torch.device("cpu")
+        boxes = boxes[i]
+        scores = scores[i]
         # this version of nms is slower on GPU, so we move data to CPU.
         boxes = boxes.to(cpu_device)
         scores = scores.to(cpu_device)
@@ -89,4 +118,17 @@ class Predictor:
             torch.tensor(picked_labels),
             picked_box_probs[:, 4],
         )
+
+
+class Video(Dataset):
+    def __init__(self, numpy_video, transform=lambda o: o):
+        super(Video).__init__()
+        self.b = numpy_video
+        self.t = transform
+
+    def __len__(self):
+        return self.b.shape[0]
+
+    def __getitem__(self, index):
+        return self.t(self.b[index])
 

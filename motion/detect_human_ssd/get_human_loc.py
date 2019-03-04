@@ -37,5 +37,6 @@ def predict_image(image_path, mdl, save_result=False, top_k=10, prob_threshold=0
     return boxes, labels, probs
 
 
-def predict_video():
-    pass
+def predict_video(video_array, mdl, top_k=10, prob_threshold=0.4):
+    boxes, labels, probs = mdl.predict_video(video_array, top_k, prob_threshold)
+    return boxes, labels, probs

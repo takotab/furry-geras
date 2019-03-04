@@ -1,8 +1,8 @@
 import numpy as np
 import torch
 
-from motion.detect_human import load_mdl
-from motion.detect_human import get_human_loc
+from motion.detect_human_ssd import load_mdl
+from motion.detect_human_ssd import get_human_loc
 from motion import get_video_array
 
 f = "/home/tako/devtools/furry-geras/test/data/000000050638.jpg"
@@ -14,6 +14,7 @@ def load_detect_human_mdl(**kwargs):
     mdl = load_mdl(**kwargs)
 
     a = torch.rand(4, 3, 500, 500)
+
     assert mdl(a).shape == (4, 4)
     return mdl
 

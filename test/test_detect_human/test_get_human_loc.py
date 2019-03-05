@@ -25,20 +25,18 @@ def test_human_loc():
     mdl = load_detect_human_mdl()
     # vid_array = get_video_array(f)
     # size = [vid_array.shape[s] for s in (1, 2, 1, 2)]
-    boxes, labels, probs = predict_image(f, mdl, save_result=True)
-    print(boxes, labels, probs, boxes[0])
-    _boy_beer_check(boxes)
+    bbox_pred = predict_image(f, mdl, save_result=True)
+    _boy_beer_check(bbox_pred.get_human("bbox"))
+
     image = cv2.imread(f)[None, :]
     video_array = np.concatenate([image] * 17, 0)
-    lst = predict_video(video_array, mdl)
-    print([o[0].shape for o in lst], "*", len(lst[0]))
-    _boy_beer_check(lst[0][0])
+    bbox_preds_lst = predict_video(video_array, mdl)
+    _boy_beer_check(bbox_preds_lst[0].get_human("bbox"))
     # assert np.mean(np.abs(bbox - results)) < 0.04
 
 
-def _boy_beer_check(boxes):
-    boxes = boxes[0].detach().numpy()
-    assert np.round(boxes[0]) == 353
-    assert np.round(boxes[1]) == 65
-    assert np.round(boxes[2]) == 487
-    assert np.round(boxes[3]) == 385
+def _boy_beer_check(bbox):
+    assert np.round(bbox[0]) == 353
+    assert np.round(bbox[1]) == 65
+    assert np.round(bbox[2]) == 487
+    assert np.round(bbox[3]) == 385

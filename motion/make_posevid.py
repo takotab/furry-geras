@@ -2,6 +2,7 @@ import time
 
 import torch
 
+import motion
 from motion import detect_human_ssd
 from . import pose_resnet
 from . import get_video_array, get_pose, plot_pose, make_video, filename_maker, config
@@ -28,9 +29,14 @@ class Video2Pose(object):
     def make_posevid(self, video_dir, plot_pose=True):
         self.timer.start()
         self.name = filename_maker(video_dir)
-        array = get_video_array(video_dir, config.get_image_size("both"))
+        array = get_video_array(video_dir)  # , config.get_image_size("both"))
+        self.timer.lap(msg="video")
 
-        self.timer.lap(msg="geting video")
+        bbox_results = detect_human_ssd.predict_video(array, self.ssd_mdl)
+        self.timer.lap(msg="human_loc")
+
+        human_array = motion.crop_to_human(array, bbox_results)
+        self.timer.lap(msg="crop human")
         pred = get_pose(array, self)
         self.timer.lap(msg="get_pose")
         if plot_pose:

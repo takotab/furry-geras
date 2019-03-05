@@ -4,6 +4,7 @@ import cv2
 from . import box_utils
 from .data_preprocessing import PredictionTransform
 from .utils_misc import Timer
+from ..utils import BBoxPreds, BBox
 
 from torch.utils.data import Dataset, DataLoader
 
@@ -69,15 +70,13 @@ class Predictor:
         scores, boxes = torch.cat(scores, 0), torch.cat(boxes, 0)
         # print(scores.shape)
         height, width, _ = video[0].shape
-        boxs, labels, probs = [], [], []
+        bbox_preds = []
         for i in range(scores.shape[0]):
-            _box, _label, _probs = self.procces_images(
+            _bbox_pred = self.procces_images(
                 boxes, scores, height, width, prob_threshold, i
             )
-            boxs.append(_box)
-            labels.append(_label)
-            probs.append(_probs)
-        return boxs, labels, probs
+            bbox_preds.append(_bbox_pred)
+        return bbox_preds
 
     def procces_images(self, boxes, scores, height, width, prob_threshold, top_k, i=0):
         cpu_device = torch.device("cpu")
@@ -114,10 +113,8 @@ class Predictor:
         picked_box_probs[:, 1] *= height
         picked_box_probs[:, 2] *= width
         picked_box_probs[:, 3] *= height
-        return (
-            picked_box_probs[:, :4],
-            torch.tensor(picked_labels),
-            picked_box_probs[:, 4],
+        return BBoxPreds(
+            picked_box_probs[:, :4], torch.tensor(picked_labels), picked_box_probs[:, 4]
         )
 
 

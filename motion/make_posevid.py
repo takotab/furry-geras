@@ -14,24 +14,30 @@ class Video2Pose(object):
         self.device = torch.device(device)
         self.pose_mdl = pose_resnet.get_pose_model()
         self.pose_mdl.to(device)
+        self.timer = Timer()
 
     # def get_pose
 
-    def make_posevid(self, video_dir, make_plot_pose=True):
-        timer = Timer().start()
-        name = filename_maker(video_dir)
+    def make_posevid(self, video_dir, plot_pose=True):
+        self.timer.start()
+        self.name = filename_maker(video_dir)
         array = get_video_array(video_dir, config.get_image_size("both"))
 
-        timer.lap(msg="geting video")
+        self.timer.lap(msg="geting video")
         pred = get_pose(array, self)
-        timer.lap(msg="get_pose")
-        if make_plot_pose:
-            pose_imgs_dir = plot_pose(array, pred, name=name)
-            timer.lap(msg="plot_pose")
-            posevid_dir = make_video(pose_imgs_dir, name=name)
-            timer.end(msg="making video")
-            print("saved at ", posevid_dir)
-            return posevid_dir
+        self.timer.lap(msg="get_pose")
+        if plot_pose:
+            return self._make_plot_pose(array, pred)
+        return array, pred
+
+    def _make_plot_pose(self, array, pred):
+        self.timer.start()
+        pose_imgs_dir = plot_pose(array, pred, name=self.name)
+        self.timer.lap(msg="plot_pose")
+        posevid_dir = make_video(pose_imgs_dir, name=self.name)
+        self.timer.lap(msg="making video")
+        print("saved at ", posevid_dir)
+        return posevid_dir
 
 
 def make_posevid(*args, **kwargs):

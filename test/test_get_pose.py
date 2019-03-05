@@ -8,6 +8,6 @@ video_file = os.path.join(os.getcwd(), "test/assets/divera_trend_small.m4v")
 
 def test_get_pose():
     vid2pose = motion.Video2Pose()
-    vid2pose.make_posevid(video_file, False)
-    # assert False
-    # pass
+    array, pred = vid2pose.make_posevid(video_file, False)
+    vid2pose._make_plot_pose(array[:2], pred[:2])
+    assert True

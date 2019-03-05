@@ -4,35 +4,37 @@ import torch
 
 from . import pose_resnet
 from . import get_video_array, get_pose, plot_pose, make_video, filename_maker, config
+from .utils import Timer
 
 
-class Video2PoseVid(object):
+class Video2Pose(object):
     def __init__(self, device=None):
         if device is None:
             device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.device = torch.device(device)
-        self.pose_mdl = get_model()
+        self.pose_mdl = pose_resnet.get_pose_model()
         self.pose_mdl.to(device)
 
-    def make_posevid(self, video_dir):
-        start_time = time.time()
+    # def get_pose
+
+    def make_posevid(self, video_dir, make_plot_pose=True):
+        timer = Timer().start()
         name = filename_maker(video_dir)
         array = get_video_array(video_dir, config.get_image_size("both"))
 
-        print("geting video", time.time() - start_time)
+        timer.lap(msg="geting video")
         pred = get_pose(array, self)
-        print("geting get_pose", time.time() - start_time)
-        pose_imgs_dir = plot_pose(array, pred, name=name)
-        print("geting plot_pose", time.time() - start_time)
-        posevid_dir = make_video(pose_imgs_dir, name=name)
-        print("saved at ", posevid_dir)
-        return posevid_dir
+        timer.lap(msg="get_pose")
+        if make_plot_pose:
+            pose_imgs_dir = plot_pose(array, pred, name=name)
+            timer.lap(msg="plot_pose")
+            posevid_dir = make_video(pose_imgs_dir, name=name)
+            timer.end(msg="making video")
+            print("saved at ", posevid_dir)
+            return posevid_dir
 
 
 def make_posevid(*args, **kwargs):
-    vp = Video2PoseVid()
+    vp = Video2Pose()
     vp.make_posevid(*args, **kwargs)
 
-
-def get_model(**kwargs):
-    return pose_resnet.get_fully_pretrained_pose_net(**kwargs)

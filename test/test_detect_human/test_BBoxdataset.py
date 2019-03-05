@@ -10,7 +10,7 @@ def test_make_inference():
 def test_bbox_dataset():
     size = 500
     bbox_data = BBoxDataset(
-        "test/data/one_sample_dataset.csv", size=size, type="valid", fastai_out=True
+        "test/assets/one_sample_dataset.csv", size=size, type="valid", fastai_out=True
     )
     sample = bbox_data[0]
     assert sample[0].shape == (3, size, size)

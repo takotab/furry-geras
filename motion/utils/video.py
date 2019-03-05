@@ -45,11 +45,12 @@ def make_video(images, name=None, fps=30, size=None, is_color=True, format="XVID
             img = resize(img, size)
         vid.write(img)
     vid.release()
+    print("video located at {name}")
     return vid_dir
 
 
 def get_video_array(video_dir, resize=None):
-
+    assert os.path.exists(video_dir)
     cap = cv2.VideoCapture(video_dir)
     frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     if resize is None:
@@ -72,6 +73,7 @@ def get_video_array(video_dir, resize=None):
         fc += 1
 
     cap.release()
+    assert len(buf) > 0
     return buf
 
 

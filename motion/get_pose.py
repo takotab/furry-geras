@@ -31,13 +31,13 @@ class Video(Dataset):
         return transform(self.b[index])
 
 
-def pose_estimate(data_array, vidpose, data=None, batch_size=32):
+def pose_estimate(data_array, vidpose, data=None, batch_size=16):
     start_time = time.time()
 
     if data is None:
         data = DataLoader(Video(data_array), batch_size=batch_size)
     pred, val = [], []
-    print("batch_size", batch_size)
+    print("batch_size", batch_size, len(data))
     for input in data:
         output = vidpose.pose_mdl(input.to(vidpose.device))
         _pred, _val = pose_resnet.inference.get_max_preds(output.detach().cpu().numpy())

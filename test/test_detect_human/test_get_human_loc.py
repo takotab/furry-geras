@@ -5,8 +5,9 @@ import torch
 from motion.detect_human_ssd import load_mdl
 from motion.detect_human_ssd import predict_image, predict_video
 from motion import get_video_array
+from motion import make_video
 
-f = "/home/tako/devtools/furry-geras/test/data/000000050638.jpg"
+f = "test/assets/boy_beer.jpg"
 size = 393, 640
 results = [274.0, 118.0, 401.0, 434.0]
 

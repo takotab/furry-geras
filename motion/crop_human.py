@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from .utils import BBox, BBoxPreds
+from . import BBox, BBoxPreds
 from . import config
 
 

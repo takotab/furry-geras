@@ -2,7 +2,7 @@ import numpy as np
 import torch
 
 import motion
-from motion.utils import BBoxPreds
+from motion import BBoxPreds
 
 
 def test_crop_human():

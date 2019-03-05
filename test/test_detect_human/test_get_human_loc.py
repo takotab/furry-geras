@@ -5,7 +5,7 @@ import torch
 from motion.detect_human_ssd import load_mdl
 from motion.detect_human_ssd import predict_image, predict_video
 from motion import get_video_array
-from motion import make_video
+from motion import make_video, BBox
 
 f = "test/assets/boy_beer.jpg"
 size = 393, 640
@@ -35,7 +35,7 @@ def test_human_loc():
     # assert np.mean(np.abs(bbox - results)) < 0.04
 
 
-def _boy_beer_check(bbox):
+def _boy_beer_check(bbox: BBox):
     assert np.round(bbox[0]) == 353
     assert np.round(bbox[1]) == 65
     assert np.round(bbox[2]) == 487

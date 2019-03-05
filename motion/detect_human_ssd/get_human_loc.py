@@ -1,5 +1,6 @@
 import cv2
 
+from motion import BBoxPreds
 
 label_path = "models/voc-model-labels.txt"
 
@@ -19,7 +20,7 @@ def predict_video(video_array, mdl, top_k=10, prob_threshold=0.4):
     return mdl.predict_video(video_array, top_k, prob_threshold)
 
 
-def save_results(orig_image, bbox_preds, mdl):
+def save_results(orig_image, bbox_preds: BBoxPreds, mdl):
     for bbox_pred in bbox_preds:
         box = bbox_pred["bbox"].get_all(conv_type=int)
         cv2.rectangle(orig_image, (box[0], box[1]), (box[2], box[3]), (255, 255, 0), 4)

@@ -7,6 +7,9 @@ video_file = os.path.join(os.getcwd(), "coco/divera_trend.mp4")
 
 # does not find person probally due to rotated video
 # TODO solve rotation problem
+# found a hint for images https://stackoverflow.com/a/54929872/6950549
+
+
 def test_get_pose():
     vid2pose = motion.Video2Pose(device="cpu")
     array, pred = vid2pose.make_posevid(video_file, False)

@@ -11,6 +11,7 @@ certifi==2018.11.29
 chardet==3.0.4
 Click==7.0
 cloudpickle==0.7.0
+coverage==4.5.2
 cycler==0.10.0
 cymem==2.0.2
 cytoolz==0.9.0.1
@@ -64,6 +65,7 @@ Pygments==2.3.1
 pylint==2.2.2
 pyparsing==2.3.1
 pytest==4.2.0
+pytest-cov==2.6.1
 python-dateutil==2.7.5
 pytz==2018.9
 PyWavelets==1.0.1

@@ -20,4 +20,4 @@ if __name__ == "__main__":
     main(video_dir)
     # motion.train_pipeline.train()
     # motion.detect_human.bbox_dataset.get_one_sample_csv()
-    # os.system("python -m pytest test/  ")
+    os.system("python -m pytest --cov=motion test/")

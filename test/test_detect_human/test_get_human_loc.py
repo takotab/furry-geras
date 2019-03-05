@@ -33,7 +33,6 @@ def test_human_loc():
     lst = predict_video(video_array, mdl)
     print([o[0].shape for o in lst], "*", len(lst[0]))
     _boy_beer_check(lst[0][0])
-    assert 1 == 0
     # assert np.mean(np.abs(bbox - results)) < 0.04
 
 

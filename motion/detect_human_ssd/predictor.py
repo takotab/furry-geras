@@ -1,4 +1,5 @@
 import torch
+import cv2
 
 from . import box_utils
 from .data_preprocessing import PredictionTransform
@@ -130,5 +131,5 @@ class Video(Dataset):
         return self.b.shape[0]
 
     def __getitem__(self, index):
-        return self.t(self.b[index])
+        return self.t(cv2.cvtColor(self.b[index], cv2.COLOR_BGR2RGB))
 

@@ -28,8 +28,7 @@ def test_human_loc():
     boxes, labels, probs = predict_image(f, mdl, save_result=True)
     print(boxes, labels, probs, boxes[0])
     _boy_beer_check(boxes)
-    orig_image = cv2.imread(f)
-    image = cv2.cvtColor(orig_image, cv2.COLOR_BGR2RGB)[None, :]
+    image = cv2.imread(f)[None, :]
     video_array = np.concatenate([image] * 17, 0)
     lst = predict_video(video_array, mdl)
     print([o[0].shape for o in lst], "*", len(lst[0]))

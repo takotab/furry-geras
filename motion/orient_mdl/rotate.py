@@ -14,11 +14,12 @@ def rotate(video_array, mdl: torch.nn.Module = None, device=torch.device("cpu"))
     _im = trans(video_array[0])[None, :].float().to(device)
     with torch.no_grad():
         pred = mdl(_im).detach().numpy().argmax()
-    print(pred)
+
     if pred is 0:
         return video_array
 
     angle = [0, 90, 180, 270][pred]
+    print(f"Detected Video to be sideways ({str(angle)})")
     result = []
     for array in video_array:
         result.append(imutils.rotate_bound(array, 360 - angle))

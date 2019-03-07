@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import cv2
 
@@ -119,13 +120,13 @@ class Predictor:
 
 
 class Video(Dataset):
-    def __init__(self, numpy_video, transform=lambda o: o):
+    def __init__(self, numpy_video: [np.array], transform=lambda o: o):
         super(Video).__init__()
         self.b = numpy_video
         self.t = transform
 
     def __len__(self):
-        return self.b.shape[0]
+        return len(self.b)
 
     def __getitem__(self, index):
         return self.t(cv2.cvtColor(self.b[index], cv2.COLOR_BGR2RGB))

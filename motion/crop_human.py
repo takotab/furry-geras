@@ -9,7 +9,7 @@ def crop_to_human(arrays, bbox_results: [BBoxPreds], size=None):
     if not size:
         size = config.get_image_size("both")
     vid_array = []
-    for i in range(arrays.shape[0]):
+    for i in range(len(arrays)):
         if not bbox_results[i].incl_human:
             Warning(f"No human found in frame {i}.")
         else:

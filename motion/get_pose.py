@@ -20,12 +20,12 @@ transform = transforms.Compose([transforms.ToTensor(), normalize])
 
 
 class Video(Dataset):
-    def __init__(self, numpy_video):
+    def __init__(self, numpy_video: [np.array]):
         super(Video).__init__()
         self.b = numpy_video
 
     def __len__(self):
-        return self.b.shape[0]
+        return len(self.b)
 
     def __getitem__(self, index):
         return transform(self.b[index])

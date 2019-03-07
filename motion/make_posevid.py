@@ -7,6 +7,7 @@ from motion import detect_human_ssd
 from . import pose_resnet
 from . import get_video_array, get_pose, plot_pose, make_video, filename_maker, config
 from .utils import Timer
+from . import orient_mdl
 
 
 class Video2Pose(object):
@@ -17,10 +18,12 @@ class Video2Pose(object):
             device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.device = torch.device(device)
 
+        self.ssd_mdl = detect_human_ssd.load_mdl(device=device)
+
+        self.orient_mdl = orient_mdl.load_mdl(device=self.device)
+
         self.pose_mdl = pose_resnet.get_pose_model()
         self.pose_mdl.to(device)
-
-        self.ssd_mdl = detect_human_ssd.load_mdl(device=device)
 
         self.timer.end(key="init", msg="initializing")
 
@@ -31,6 +34,9 @@ class Video2Pose(object):
         self.name = filename_maker(video_dir)
         array = get_video_array(video_dir)  # , config.get_image_size("both"))
         self.timer.lap(msg="video")
+
+        array = orient_mdl.rotate(array, self.orient_mdl)
+        self.timer.lap(msg="rotating video")
 
         bbox_results = detect_human_ssd.predict_video(array, self.ssd_mdl)
         self.timer.lap(msg="human_loc")

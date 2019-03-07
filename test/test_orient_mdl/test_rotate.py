@@ -1,3 +1,4 @@
+import numpy as np
 import cv2
 import imutils
 import torch
@@ -24,5 +25,5 @@ def test_orientmdl(angle_i=None):
     rotated_vid = rotate([_im] * 7, mdl)
     print([o.shape for o in rotated_vid], img.shape)
     assert rotated_vid[0].shape == img.shape
-    assert rotated_vid[0][0, 0, 0] == img[0, 0, 0]
+    assert np.mean(abs(rotated_vid[0] - img)) < 1
 

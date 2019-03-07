@@ -15,3 +15,4 @@ def test_get_pose():
     array, pred = vid2pose.make_posevid(video_file, False)
     vid2pose._make_plot_pose(array[:2], pred[:2])
     assert True
+

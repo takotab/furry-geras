@@ -1,4 +1,3 @@
-
 #%%
 import torch
 from torch.utils.data import Dataset, DataLoader
@@ -15,7 +14,7 @@ import motion
 
 
 #%%
-im = cv2.imread('coco/divera_trend.png')
+im = cv2.imread("coco/divera_trend.png")
 plt.imshow(im)
 
 
@@ -25,21 +24,25 @@ mdl_pose_resnet = motion.pose_resnet.get_pose_model()
 
 #%%
 from motion.detect_human.fastai_utils import *
+
+
 class OrientMdl(nn.Module):
     def __init__(self, pose_resnet, p=0.5):
         super(OrientMdl, self).__init__()
         self.cnn = nn.Sequential(*list(pose_resnet.children())[:2])
         self.pool = nn.Sequential(*[AdaptiveConcatPool2d(), Flatten()])
-        self.head = nn.Sequential(*[nn.BatchNorm1d(128),nn.Dropout(p),nn.Linear(128, 4)])
-        
-    def forward(self,x):
+        self.head = nn.Sequential(
+            *[nn.BatchNorm1d(128), nn.Dropout(p), nn.Linear(128, 4)]
+        )
+
+    def forward(self, x):
         x = self.cnn(x)
         x = self.pool(x)
         x = self.head(x)
         return x
-    
+
     def parameters_small(self):
-        return [*list(self.pool.parameters()),*list(self.head.parameters())]
+        return [*list(self.pool.parameters()), *list(self.head.parameters())]
 
 
 #%%
@@ -64,19 +67,24 @@ class RotationDataset(Dataset):
         self.df = pd.read_csv(csv_file)
         print("Dataset has {} samples.".format((self.df.shape[0])))
         self.trans = PredictionTransform(300)
-        
+
     def __len__(self):
         return self.df.shape[0]
-    
-    def __getitem__(self,index):
+
+    def __getitem__(self, index):
+        return self.get(index)
+
+    def get(self, index, angle_i=None):
         data = dict(self.df.iloc[index, :])
-        angle_i = np.random.randint(3)
-        angle = [0,90,180,270][angle_i]
+        if angle_i is None:
+            angle_i = np.random.randint(3)
+        angle = [0, 90, 180, 270][angle_i]
         img = cv2.imread(data["filename"])
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = imutils.rotate_bound(img,angle)
-        return {"data":self.trans(img).float(), "target":angle_i}
-    
+        img = imutils.rotate_bound(img, angle)
+        return {"data": self.trans(img).float(), "target": angle_i}
+
+
 rot_dl = DataLoader(RotationDataset("coco/val2017_one_human_train.csv"))
 rot_val_dl = DataLoader(RotationDataset("coco/val2017_one_human_val.csv"))
 
@@ -100,18 +108,10 @@ fsm = FileStructManager(base_dir="models/detect_rotv_3/", is_continue=True)
 
 
 train_dataset = DataProducer(
-    [
-       RotationDataset("coco/train2017_one_human.csv")
-    ],
-    batch_size=64,
-    num_workers=5,
+    [RotationDataset("coco/train2017_one_human.csv")], batch_size=64, num_workers=5
 )
 validation_dataset = DataProducer(
-    [
-        RotationDataset("coco/val2017_one_human_train.csv")
-    ],
-    batch_size=64,
-    num_workers=2,
+    [RotationDataset("coco/val2017_one_human_train.csv")], batch_size=64, num_workers=2
 )
 
 train_config = TrainConfig(
@@ -122,9 +122,7 @@ train_config = TrainConfig(
 )
 
 trainer = (
-    Trainer(mdl, train_config, fsm, torch.device("cuda:0")).set_epoch_num(
-        5
-    )
+    Trainer(mdl, train_config, fsm, torch.device("cuda:0")).set_epoch_num(5)
     # .enable_lr_decaying(0.97, 1000)
 )
 
@@ -136,7 +134,7 @@ trainer.train()
 
 #%%
 trans = PredictionTransform(300)
-print(nn.Softmax()(  mdl(trans(im)[None,:].float().to(torch.device('cuda:0')))))
+print(nn.Softmax()(mdl(trans(im)[None, :].float().to(torch.device("cuda:0")))))
 plt.imshow(im)
 
 
@@ -146,32 +144,44 @@ ds = RotationDataset("coco/val2017_one_human_train.csv")
 
 #%%
 
-def plot_im(i,ds):
+
+def plot_im(i, ds):
     sample = ds[i]
-    im = sample['data']
-    orignal = im.detach().numpy().transpose(1,2,0).astype(np.int)
+    im = sample["data"]
+    orignal = im.detach().numpy().transpose(1, 2, 0).astype(np.int)
     plt.imshow(orignal)
-    pred = nn.Softmax()(  mdl(im[None,:].float().to(torch.device('cuda:0')))).cpu().detach().numpy()
-    print(sample['target'],np.argmax(pred),pred)
+    pred = (
+        nn.Softmax()(mdl(im[None, :].float().to(torch.device("cuda:0"))))
+        .cpu()
+        .detach()
+        .numpy()
+    )
+    print(sample["target"], np.argmax(pred), pred)
     plt.show()
 
+
 for i in range(10):
-    plot_im(i,ds)
+    plot_im(i, ds)
 
 
 #%%
 good = 0
-for i in range(len(ds)) :
+for i in range(len(ds)):
     sample = ds[i]
-    im = sample['data']
-    
-    pred = np.argmax(nn.Softmax()(  mdl(im[None,:].float().to(torch.device('cuda:0')))).cpu().detach().numpy())
-    good += int(pred == sample['target'])
-print(good/len(ds))
+    im = sample["data"]
+
+    pred = np.argmax(
+        nn.Softmax()(mdl(im[None, :].float().to(torch.device("cuda:0"))))
+        .cpu()
+        .detach()
+        .numpy()
+    )
+    good += int(pred == sample["target"])
+print(good / len(ds))
 
 
 #%%
-PATH = 'models/OrientMdl.pth'
+PATH = "models/OrientMdl.pth"
 torch.save(mdl.state_dict(), PATH)
 
 
@@ -179,5 +189,4 @@ torch.save(mdl.state_dict(), PATH)
 model = TheModelClass(*args, **kwargs)
 model.load_state_dict(torch.load(PATH))
 model.eval()
-
 

@@ -1,9 +1,12 @@
 import torch
 import numpy as np
+import os
 from collections import namedtuple
 
 
-label_path = "models/voc-model-labels.txt"
+label_path = os.path.join(
+    "/", *__file__.split(os.sep)[:-2], "detect_human_ssd/voc-model-labels.txt"
+)
 class_names = [name.strip() for name in open(label_path).readlines()]
 
 locations = ["x_center", "x_width", "y_center", "y_height"]

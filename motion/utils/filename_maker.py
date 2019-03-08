@@ -30,7 +30,6 @@ def del_folder(folder, glob_pattern="*"):
         if os.path.isdir(f):
             del_folder(f)
         else:
-            print("delete", f)
             os.remove(f)
     try:
         os.removedirs(folder)

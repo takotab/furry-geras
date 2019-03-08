@@ -11,11 +11,7 @@ import os
 import sys
 import motion
 
-# https://syncwithtech.blogspot.com/p/direct-download-link-generator.html
-model_file_url = (
-    "https://drive.google.com/uc?export=download&id=1RVKXdDggdXnb9UU4efosCBLZMkj0vXtN"
-)
-model_file = "models/pose_resnet_50_256x192.pth.tar"
+from .model_url_dest import mdl_url_dest
 
 path = Path(__file__).parent
 app = Starlette()
@@ -36,17 +32,23 @@ async def download_file(url, dest):
             data = await response.read()
             with open(dest, "wb") as f:
                 f.write(data)
-    print("done downloading")
+    print(f"done downloading {url}")
 
 
-async def setup_mdl():
-    await download_file(model_file_url, Path(model_file))
+async def setup_mdl(key):
+    c_url_dst = mdl_url_dest[key]
+    await download_file(c_url_dst["url"], Path(c_url_dst["dest"]))
 
 
 loop = asyncio.get_event_loop()
-tasks = [asyncio.ensure_future(setup_mdl())]
-mdl = loop.run_until_complete(asyncio.gather(*tasks))[0]
+tasks = [
+    asyncio.ensure_future(setup_mdl("pose")),
+    asyncio.ensure_future(setup_mdl("orient")),
+    asyncio.ensure_future(setup_mdl("detect_human_ssd")),
+]
+loop.run_until_complete(asyncio.gather(*tasks))
 loop.close()
+vid2pose = motion.Video2Pose(device="cuda:0")
 
 
 @app.route("/")
@@ -70,7 +72,7 @@ async def analyze(request):
     filename = os.path.join(motion.filename_maker(), "pose_vid.mp4")
     with open(filename, "bw") as f:
         f.write(img_bytes)
-    pose_vid = motion.make_posevid(filename)
+    pose_vid = vid2pose.make_posevid(filename)
     return JSONResponse({"result": pose_vid.split("/")[-2]})
 
 

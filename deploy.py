@@ -21,7 +21,7 @@ def check_tests_passed():
 
 def main():
 
-    os.system("python -m pytest --result-log=test_results.txt")
+    os.system("python -m pytest test/ --result-log=test_results.txt")
     check_tests_passed()
     path = Path("/home", "tako", "devtools", "furry-geras")
     copyanything(

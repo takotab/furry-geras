@@ -77,3 +77,21 @@ class BBoxPreds(object):
 
     def __str__(self):
         return str([dct for dct in self.preds]) + str(self.incl_human)
+
+
+class Model(object):
+    def __init__(self, mdl, transform=None, device: torch.device = None, **kwargs):
+        if device is None:
+            device = torch.device("cpu")
+        self.mdl = mdl
+        self.device = device
+        self.mdl.to(self.device)
+        self.transform = transform
+
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def __call__(self, x):
+        if self.transform:
+            x = self.transform
+        return self.mdl(x.to(self.device))

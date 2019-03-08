@@ -5,7 +5,7 @@ import torch
 import motion
 from motion import detect_human_ssd
 from . import pose_resnet
-from . import get_video_array, get_pose, plot_pose, make_video, filename_maker, config
+from . import get_video_array, plot_pose, make_video, filename_maker, config
 from .utils import Timer
 from . import orient_mdl
 
@@ -22,7 +22,7 @@ class Video2Pose(object):
 
         self.orient_mdl = orient_mdl.load_mdl(device=self.device)
 
-        self.pose_mdl = pose_resnet.get_pose_model(device=self.device)
+        self.pose_mdl = pose_resnet.load_mdl(device=self.device)
 
         self.timer.end(key="init", msg="initializing")
 
@@ -42,10 +42,12 @@ class Video2Pose(object):
 
         human_array = motion.crop_to_human(array, bbox_results)
         self.timer.lap(msg="crop human")
-        pred = get_pose(array, self)
+
+        pred = pose_resnet.get_pose(array, self.pose_mdl)
         self.timer.lap(msg="get_pose")
+
         if plot_pose:
-            return self._make_plot_pose(array, pred)
+            return self._make_plot_pose(human_array, pred)
         return array, pred
 
     def _make_plot_pose(self, array, pred):

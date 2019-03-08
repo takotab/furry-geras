@@ -18,12 +18,11 @@ class Video2Pose(object):
             device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.device = torch.device(device)
 
-        self.ssd_mdl = detect_human_ssd.load_mdl(device=device)
+        self.ssd_mdl = detect_human_ssd.load_mdl(device=self.device)
 
         self.orient_mdl = orient_mdl.load_mdl(device=self.device)
 
-        self.pose_mdl = pose_resnet.get_pose_model()
-        self.pose_mdl.to(device)
+        self.pose_mdl = pose_resnet.get_pose_model(device=self.device)
 
         self.timer.end(key="init", msg="initializing")
 

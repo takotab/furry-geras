@@ -335,7 +335,9 @@ def get_pose_net(cfg, is_train, **kwargs):
     return model
 
 
-def get_pose_model(f_pretrained=None, num_layers=50, cfg=None, **kwargs):
+def get_pose_model(
+    f_pretrained=None, num_layers=50, cfg=None, device=torch.device("cpu"), **kwargs
+):
     if f_pretrained is None:
         f_pretrained = Path("models/pose_resnet_50_256x192.pth.tar")
     block_class, layers = resnet_spec[num_layers]
@@ -349,6 +351,7 @@ def get_pose_model(f_pretrained=None, num_layers=50, cfg=None, **kwargs):
 
     model = PoseResNet(block_class, layers, cfg, **kwargs)
     model.load_state_dict(torch.load(f_pretrained), strict=False)
+    model.to(device)
     return model
 
 

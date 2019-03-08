@@ -20,17 +20,18 @@ def get_pose(numpy_video: [np.array], *args, **kwargs):
     return pred
 
 
-def pose_estimate(data_array, pose_mdl, batch_size=16):
+def pose_estimate(data_array, pose_mdl, batch_size=8):
     timer = Timer().start()
     video_dl = DataLoader(Video(data_array), batch_size=batch_size)
 
     pred, val = [], []
-    for i, input in enumerate(video_dl):
-        output = pose_mdl(input)
-        _pred, _val = inference.get_max_preds(output.detach().cpu().numpy())
-        pred.append(_pred)
-        val.append(val)
-        timer.lap(msg=f"batch {str(i+1)}/{str(len(video_dl))}")
+    with torch.no_grad():
+        for i, input in enumerate(video_dl):
+            output = pose_mdl(input).detach().cpu().numpy()
+            _pred, _val = inference.get_max_preds(output)
+            pred.append(_pred)
+            val.append(val)
+            timer.lap(msg=f"batch {str(i+1)}/{str(len(video_dl))}")
 
     return np.concatenate(pred)
 

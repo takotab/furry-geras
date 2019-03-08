@@ -59,24 +59,27 @@ class Predictor:
         return self.procces_images(boxes, scores, height, width, prob_threshold, top_k)
 
     def predict_video(self, video, top_k, prob_threshold, bs=16):
-        vid_dl = DataLoader(Video(video, self.transform), batch_size=bs)
+        vid_dl = DataLoader(
+            Video(video, transform=self.transform, device=self.device), batch_size=bs
+        )
         scores, boxes = [], []
         with torch.no_grad():
             for images in vid_dl:
                 self.timer.start()
                 _score, _box = self.net.forward(images)
                 print("Inference time: ", self.timer.end())
-                scores.append(_score)
-                boxes.append(_box)
-        scores, boxes = torch.cat(scores, 0), torch.cat(boxes, 0)
-        # print(scores.shape)
-        height, width, _ = video[0].shape
-        bbox_preds = []
-        for i in range(scores.shape[0]):
-            _bbox_pred = self.procces_images(
-                boxes, scores, height, width, prob_threshold, i
-            )
-            bbox_preds.append(_bbox_pred)
+                scores.append(_score.detach())
+                boxes.append(_box.detach())
+            scores, boxes = torch.cat(scores, 0), torch.cat(boxes, 0)
+            # print(scores.shape)
+            height, width, _ = video[0].shape
+            bbox_preds = []
+            for i in range(scores.shape[0]):
+                _bbox_pred = self.procces_images(
+                    boxes, scores, height, width, prob_threshold, i
+                )
+                bbox_preds.append(_bbox_pred)
+                del _bbox_pred
         return bbox_preds
 
     def procces_images(self, boxes, scores, height, width, prob_threshold, top_k, i=0):
@@ -120,14 +123,18 @@ class Predictor:
 
 
 class Video(Dataset):
-    def __init__(self, numpy_video: [np.array], transform=lambda o: o):
+    def __init__(self, numpy_video: [np.array], device=None, transform=lambda o: o):
         super(Video).__init__()
         self.b = numpy_video
         self.t = transform
+        if device is None:
+            raise NotImplementedError()
+        self.device = device
 
     def __len__(self):
         return len(self.b)
 
     def __getitem__(self, index):
-        return self.t(cv2.cvtColor(self.b[index], cv2.COLOR_BGR2RGB))
+        im = self.t(cv2.cvtColor(self.b[index], cv2.COLOR_BGR2RGB))
+        return im.to(self.device)
 

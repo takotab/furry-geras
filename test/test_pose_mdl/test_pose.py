@@ -33,3 +33,12 @@ def test_pose():
     pred = pose_resnet.get_pose([img], mdl)
     # motion.plot_pose(img, pred[0], save=False)
     assert (target == pred[0]).all()
+
+
+def big_array_test(len=55):
+    img = cv2.imread(f)
+
+    mdl = pose_resnet.get_pose_model(device=torch.device("cpu"))
+    pred = pose_resnet.get_pose([img] * 55, mdl)
+    assert True
+

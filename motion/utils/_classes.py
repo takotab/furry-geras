@@ -36,9 +36,9 @@ class BBoxPreds(object):
         for i in range(bboxs.shape[0]):
             self.preds.append(
                 {
-                    "bbox": BBox(bboxs[i, :].detach().numpy()),
-                    "label": class_names[int(labels[i].detach().numpy())],
-                    "prob": float(probs[i].detach().numpy()),
+                    "bbox": BBox(bboxs[i, :].detach().cpu().numpy()),
+                    "label": class_names[int(labels[i].detach().cpu().numpy())],
+                    "prob": float(probs[i].detach().cpu().numpy()),
                 }
             )
         self._incl_human()
@@ -86,6 +86,7 @@ class Model(object):
         self.mdl = mdl
         self.device = device
         self.mdl.to(self.device)
+        self.mdl.eval()
         self.transform = transform
 
         for key, value in kwargs.items():

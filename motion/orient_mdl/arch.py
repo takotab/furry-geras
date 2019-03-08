@@ -1,5 +1,5 @@
 from ..utils.import_pytorch import *
-from motion.detect_human.fastai_utils import AdaptiveConcatPool2d, Flatten
+from motion.utils.fastai_utils import AdaptiveConcatPool2d, Flatten
 from motion import pose_resnet
 
 

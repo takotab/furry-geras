@@ -21,7 +21,10 @@ def check_tests_passed():
 
 def main():
 
-    os.system("python -m pytest test/ --result-log=test_results.txt")
+    os.system("python -m pytest --cov motion test/ --result-log=test_results.txt")
+    os.system(
+        "bash <(curl -s https://codecov.io/bash) -t f8fe70e6-c65c-413f-8ef3-268dceb54ccd"
+    )
     check_tests_passed()
     path = Path("/home", "tako", "devtools", "furry-geras")
     copyanything(

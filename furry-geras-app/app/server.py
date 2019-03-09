@@ -11,9 +11,10 @@ import os
 import sys
 import motion
 
-from .model_url_dest import mdl_url_dest
+from motion.utils import mdl_url_dest
 
-path = Path(__file__).parent
+app_path = Path(__file__).parent
+url_dest = mdl_url_dest(str(app_path))
 app = Starlette()
 app.add_middleware(
     CORSMiddleware,
@@ -36,7 +37,7 @@ async def download_file(url, dest):
 
 
 async def setup_mdl(key):
-    c_url_dst = mdl_url_dest[key]
+    c_url_dst = url_dest[key]
     await download_file(c_url_dst["url"], Path(c_url_dst["dest"]))
 
 
@@ -53,7 +54,7 @@ vid2pose = motion.Video2Pose(device="cuda:0")
 
 @app.route("/")
 def index(request):
-    html = path / "view" / "index.html"
+    html = app_path / "view" / "index.html"
     return HTMLResponse(html.open().read())
 
 
@@ -77,5 +78,5 @@ async def analyze(request):
 
 
 if __name__ == "__main__":
-    if "serve" in sys.argv:
-        uvicorn.run(app, host="0.0.0.0", port=8080)
+    # if "serve" in sys.argv:
+    uvicorn.run(app, host="0.0.0.0", port=8080)

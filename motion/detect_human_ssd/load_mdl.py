@@ -1,4 +1,6 @@
 import torch
+import os
+from motion.utils import mdl_url_dest
 
 from .vgg_ssd import create_vgg_ssd, create_vgg_ssd_predictor
 from .mobilenet_v2_ssd_lite import (
@@ -11,7 +13,9 @@ image_path = "tako_bike.jpg"
 
 def load_mdl(model_path=None, label_path=None, device=torch.device("cpu")):
     if model_path is None:
-        model_path = "models/mb2-ssd-lite-mp-0_686.pth"
+        model_path = mdl_url_dest()["detect_human_ssd"]["dest"]
+        assert os.path.exists(model_path), model_path
+
     if label_path is None:
         from ..utils._classes import label_path
 

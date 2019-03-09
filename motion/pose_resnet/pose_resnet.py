@@ -16,6 +16,7 @@ import torch
 import torch.nn as nn
 from collections import OrderedDict
 
+from motion.utils import mdl_url_dest
 
 BN_MOMENTUM = 0.1
 logger = logging.getLogger(__name__)
@@ -335,11 +336,11 @@ def get_pose_net(cfg, is_train, **kwargs):
     return model
 
 
-def get_pose_model(
-    f_pretrained=None, num_layers=50, cfg=None, **kwargs
-):
+def get_pose_model(f_pretrained=None, num_layers=50, cfg=None, **kwargs):
     if f_pretrained is None:
-        f_pretrained = Path("models/pose_resnet_50_256x192.pth.tar")
+        f_pretrained = mdl_url_dest()["pose"]["dest"]
+    assert os.path.exists(f_pretrained)
+
     block_class, layers = resnet_spec[num_layers]
     if cfg is None:
         from .config import update_config

@@ -28,7 +28,7 @@ starlette==0.10.2
 torch==1.0.1.post2
 torchvision==0.2.1
 typing-extensions==3.7.2
-uvicorn==0.4.3
+uvicorn==0.11.7
 uvloop==0.12.1
 websockets==7.0
 yarl==1.3.0

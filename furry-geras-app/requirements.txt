@@ -14,7 +14,7 @@ imutils==0.5.2
 kiwisolver==1.0.1
 matplotlib==3.0.2
 multidict==4.5.2
-numpy==1.16.1
+numpy==1.22.0
 opencv-python==4.0.0.21
 pandas==0.24.1
 Pillow==5.4.1
